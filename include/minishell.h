@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/29 14:48:16 by user42            #+#    #+#             */
-/*   Updated: 2021/01/09 17:15:14 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/12 10:49:48 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 # include "get_next_line.h"
 # include <dirent.h>
 # include <signal.h>
-
+# include  "../libft/libft.h"
 #define BLACK    "\033[0;30m"
 #define RED      "\033[0;31m"
 #define GREEN    "\033[0;32m"
@@ -55,6 +55,13 @@ typedef struct	s_token
 typedef struct	s_envir
 {
 	t_token *start;
+	int	child;
+	int fdoutput;
+	int	fdinput;
+	int pipeoutfd;
+	int pipeinfd;
+	int standardin;
+	int standardout;
 	int		shlv;
 	char 	**envp;
 	char	**args;
@@ -99,7 +106,6 @@ int			ft_atoi(const char *nptr);
 void		ft_verif_cmd(char *str, char *line, t_envir *envir);
 int			ft_verif_exit(char *first, char *second);
 char		*char_walk(char *str);
-void		ft_exec(char *str, t_envir *envir, char *line);
 char		**ft_split(const char *s, const char *c);
 void		ft_exec_nonbuiltin(t_envir *envir, char *path);
 void		ft_exec_builtin(t_envir *envir);
@@ -111,4 +117,5 @@ void	ft_signal_clear();
 void	ft_signal_handler(int signal);
 void	ft_signal_register(int *signaltab);
 void    ft_signal_init();
+void		ft_exec(t_envir *envir, t_token *token);
 #endif

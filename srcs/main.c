@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/09 17:18:26 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/12 10:55:51 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,16 +27,6 @@ int		ft_upgrade_shlv(char **envp)
 		i++;
 	}
 	return (0);
-}
-
-void	ft_exec(char *str, t_envir *envir, char *line)
-{
-	char *path;
-	path = ft_catpy(ft_get(envir->envp, "PATH"), str);
-	char *argv[] = {path, line, NULL};
-	if (strcmp(envir->prog_name, str) == 0)
-		ft_upgrade_shlv(envir->envp);
-	execve(path, argv, envir->envp);
 }
 
 char	*ft_extract_builtin(char *str)
@@ -139,13 +129,6 @@ char *ft_walk_until_equal(char *str, int *length)
 		i++;
 	*length = i;
 	return (str + i + 1);
-}
-
-int		ft_isdigit(char c)
-{
-	if(c >= 48 && c <= 57)
-		return (1);
-	return (0);
 }
 
 int		ft_isalpha_min(char c)
@@ -258,7 +241,7 @@ void		ft_print_list(t_token *list)
 {
 	while(list != NULL)
 	{
-		printf("[%s]\n", list->string);
+		//printf(GREEN"[%s] with type {%d}\n"NORMAL, list->string, list->type);
 		list = list->next;
 	}
 }
@@ -277,7 +260,7 @@ int			ft_char_tono_space(char *str)
 	i = 0;
 	while(str[i] != '\0' && ft_is_whitespace(str[i]))
 	{
-		printf("Boucle to space on char [%c] at length [%d]\n", str[i], i);
+		//printf("Boucle to space on char [%c] at length [%d]\n", str[i], i);
 		i++;
 	}
 	return(i);
@@ -291,11 +274,11 @@ char		*ft_malloc_string_token(char *line, int i)
 
 	allow = 0;
 	count = 0;
-	printf("Malloc string\n");
-	printf("Starting on char %c\n", line[i]);
+	//printf("Malloc string\n");
+	//printf("Starting on char %c\n", line[i]);
 	while(line[i] != '\0' && (line[i] != ' ' || allow == 1))
 	{
-		printf("On char [%c]\n", line[i]);
+		//printf("On char [%c]\n", line[i]);
 		if((line[i] == '\'' || line[i] == '\"') && allow == 0)
 			allow = 1;
 		else if((line[i] == '\'' || line[i] == '\"') && allow == 1)
@@ -304,6 +287,7 @@ char		*ft_malloc_string_token(char *line, int i)
 			count++;
 		i++;
 	}
+	//printf("End malloc string\n");
 	return((ret = malloc(sizeof(char) * (count + 1))));
 }
 
@@ -317,11 +301,11 @@ char		*ft_get_string_token(char *line, int *i)
 	allow = 0;
 	*i += ft_char_tono_space(line + *i);
 	string = ft_malloc_string_token(line, *i);
-	printf("Fill string\n");
-	printf("Starting on char %c\n", line[*i]);
+	//printf("Fill string\n");
+	//printf("Starting on char %c\n", line[*i]);
 	while(line[*i] && (line[*i] != ' ' || allow == 1))
 	{
-		printf("On char [%c]\n", line[*i]);
+		//printf("On char [%c]\n", line[*i]);
 		if((line[*i] == '\'' || line[*i] == '\"') && allow == 0)
 			allow = 1;
 		else if((line[*i] == '\'' || line[*i] == '\"') && allow == 1)
@@ -331,23 +315,195 @@ char		*ft_get_string_token(char *line, int *i)
 		(*i)++;
 	}
 	string[j] = '\0';
+	//printf("End fill string\n");
 	return (string);
 
 }
 
+void		ft_redir_doubleright(t_envir *envir, t_token *token)
+{
+	envir->fdoutput = open(token->string, O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
+	if(envir->fdoutput == -1)
+	{
+		ft_error("Cant open file\n");
+	}
+	dup2(envir->fdoutput, STDOUT_FILENO);
+}
+void		ft_redir_right(t_envir *envir, t_token *token)
+{
+	envir->fdoutput = open(token->string, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
+	if(envir->fdoutput == -1)
+		ft_error("Cant open file\n");
+	dup2(envir->fdoutput, STDOUT_FILENO);
+}
+
+void		ft_redir_left(t_envir *envir, t_token *token)
+{
+	envir->fdinput = open(token->string, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
+	if(envir->fdinput == -1)
+		ft_error("Cant open file\n");
+	dup2(envir->fdinput, STDIN_FILENO);
+}
+
+void    ft_sxcfsf(char *str, t_envir *envir, char *line)
+{
+        char *path;
+        path = ft_catpy(ft_get(envir->envp, "PATH"), str);
+        char *argv[] = {path, line, NULL};
+        if (strcmp(envir->prog_name, str) == 0)
+                ft_upgrade_shlv(envir->envp);
+        execve(path, argv, envir->envp);
+}
+
+char		**ft_lst_to_path(t_token *start)
+{
+	t_token *token;
+	int	count;
+	char **cmd;
+
+	count = 0;
+	token = start;
+	while(token && (token->type == ARG || token->type == CMD))
+	{
+		//printf("cmd to args = [%s]\n", token->string);
+		token = token->next;
+		count++;
+	}
+	//printf("counted [%d] dimension\n", count);
+	cmd = malloc(sizeof(char*) * count);
+	count = 0;
+	token = start;
+	while(token && (token->type == ARG || token->type == CMD))
+	{
+		//printf("cmd to args = [%s]\n", token->string);
+		cmd[count++] = ft_strdup(token->string);
+		token = token->next;
+	}
+	cmd[count] = NULL;
+	count = 0;
+	while(cmd[count])
+	{
+		//printf("[%s] \n", cmd[count]);
+		count++;
+	}
+	return (cmd);
+}
+
+void		ft_exec_cmd(t_envir *envir, t_token *token)
+{
+	char	**cmd;
+	pid_t pid;
+
+	cmd = ft_lst_to_path(token);
+	pid = fork();
+	if(pid == 0)
+	{
+		printf(RED"Launch cmd [%s]\n", cmd[0]);
+		printf(NORMAL"\n");
+		execvp(cmd[0], cmd);
+		exit(0);
+	}
+	else
+		wait(&pid);
+	close(envir->pipeoutfd);
+	close(envir->pipeinfd);
+	printf("exit_exec_cmd\n");
+	(void)envir;
+}
+
+int		ft_pipe(t_envir *envir)
+{
+    int fd[2];
+    int f_pid;
+
+    if(pipe(fd) == -1)
+        strerror(errno);
+    if((f_pid = fork()) == -1)
+       strerror(errno);
+    if(f_pid == 0) //In child
+    {
+        close(fd[0]);
+        dup2(fd[1], 1);
+		envir->child = 1;
+		envir->pipeoutfd = fd[1];
+        return (2);
+    }
+    else //In parent
+    {
+		close(fd[1]);
+        dup2(fd[0], 0);
+		envir->pipeinfd = fd[0];
+        return (1);
+    }
+}
+
+t_token		*ft_token_to_cmd(t_token *token)
+{
+	while(token && token->type != CMD)
+	{
+		token = token->next;
+	}
+	return(token);
+}
+
+void		ft_exec_loop(t_envir *envir, t_token *token)
+{
+	int		status;
+	
+	token = ft_token_to_cmd(token);
+	while(token != NULL)
+	{
+		envir->child = 0;
+		ft_exec(envir, token);
+		token = token->next;
+		close(envir->fdinput);
+		close(envir->fdoutput);
+		close(envir->pipeoutfd);
+		close(envir->pipeinfd);
+		envir->fdinput = -1;
+		envir->fdoutput = -1;
+		envir->pipeoutfd = -1;
+		envir->pipeinfd = -1;
+		waitpid(-1, &status, 0);
+		if(envir->child == 1)
+		{
+			exit(0);
+		}
+		token = ft_token_to_cmd(token);
+	}
+}
+
+void		ft_exec(t_envir *envir, t_token *token)
+{
+	int pid;
+
+	pid = 0;
+	//printf("EXEEEC\n");
+	if(token->prev && token->prev->type == RIGHT)
+		ft_redir_right(envir, token);
+	if(token->prev && token->prev->type == LEFT)
+		ft_redir_left(envir, token);
+	if(token->prev && token->prev->type == DOUBLERIGHT)
+		ft_redir_doubleright(envir, token);
+	if(token->prev && token->prev->type == PIPE)
+		pid = ft_pipe(envir);
+	if((token->prev == NULL || token->prev->type == NEXT || token->prev->type == PIPE) && pid != 1)
+		ft_exec_cmd(envir, token);
+}	
+
 int			ft_get_type_token(t_token *token)
 {
-	if(ft_strcmp(token->string, "|" == 0))
+	if(ft_strcmp(token->string, "|") == 0)
 		return (PIPE);
-	if(ft_strcmp(token->string, ";" == 0))
+	if(ft_strcmp(token->string, ";") == 0)
 		return (NEXT);
-	if(ft_strcmp(token->string, "<" == 0))
+	if(ft_strcmp(token->string, "<") == 0)
 		return (LEFT);
-	if(ft_strcmp(token->string, ">>" == 0))
+	if(ft_strcmp(token->string, ">>") == 0)
 		return (DOUBLERIGHT);
-	if(ft_strcmp(token->string, ">" == 0))
+	if(ft_strcmp(token->string, ">") == 0)
 		return (RIGHT);
-	if(token->prev == NULL || token->prev == RIGHT)
+	if(token->prev == NULL || token->prev->type == RIGHT || token->prev->type == PIPE)
 		return (CMD);
 	else
 		return (ARG);
@@ -359,8 +515,9 @@ t_token		*ft_get_actual_token(char *line, int *i)
 	t_token *token;
 
 	token = malloc(sizeof(t_token));
+	//printf("Get token string\n");
 	token->string = ft_get_string_token(line, i);
-	token->type = ft_get_type_token(token);
+	//printf("Tocken string acquired\n");
 	return (token);
 }
 
@@ -375,22 +532,28 @@ t_token		*ft_tokenize(char *line)
 	elem1 = NULL;
 	while(line[i])
 	{
+		//printf("Get token\n");
 		elem1 = ft_get_actual_token(line, &i);
+		//printf("Tocken acquired\n"); 
 		elem1->prev = elem2;
 		if(elem2)
 			elem2->next = elem1;
 		elem2 = elem1;
+		//printf("Get token type\n");
+		elem2->type = ft_get_type_token(elem2);
+		//printf("Tocken type acquired\n");
 		i += ft_char_tono_space(line + i);
 	}
-	printf("Reversing list in good order\n");
+	//printf("Reversing list in good order\n");
 	if(elem1)
 		elem1->next = NULL;
+	if(elem1)
 	while(elem1 && elem1->prev)
 	{
-		printf("Reversing: On token %s\n", elem1->string);
+		//printf("Reversing: On token %s\n", elem1->string);
 		elem1 = elem1->prev;
 	}
-	printf("Printing the created list of string:\n");
+	printf("Printing the created list:\n");
 	ft_print_list(elem1);
 	return (elem1);
 }
@@ -411,7 +574,7 @@ void	ft_prompt(t_envir *envir)
 			ft_exit(envir);
 		}
 		envir->start = ft_tokenize(line);
-		//ft_execution(envir);
+		ft_exec_loop(envir, envir->start);
 	}
 }
 

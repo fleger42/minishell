@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
+/*   By: fleger <fleger@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/29 14:48:16 by user42            #+#    #+#             */
-/*   Updated: 2021/01/16 01:15:39 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/16 16:13:03 by fleger           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ typedef struct	s_token
 	struct s_token *next;
 }				t_token;
 
+void	ft_free_token(t_token *token);
 typedef struct	s_envir
 {
 	t_token *start;

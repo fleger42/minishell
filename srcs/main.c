@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
+/*   By: fleger <fleger@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/16 01:26:59 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/16 16:58:40 by fleger           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,7 +241,7 @@ void		ft_print_list(t_token *list)
 {
 	while(list != NULL)
 	{
-		//printf(GREEN"[%s] with type {%d}\n"NORMAL, list->string, list->type);
+		printf(GREEN"[%s] with type {%d}\n"NORMAL, list->string, list->type);
 		list = list->next;
 	}
 }
@@ -370,7 +370,7 @@ char		**ft_lst_to_path(t_token *start)
 		count++;
 	}
 	//printf("counted [%d] dimension\n", count);
-	cmd = malloc(sizeof(char*) * count);
+	cmd = malloc(sizeof(char*) * (count + 1));
 	count = 0;
 	token = start;
 	while(token && (token->type == ARG || token->type == CMD))
@@ -393,7 +393,9 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 {
 	char	**cmd;
 	pid_t pid;
+	int i;
 
+	i = 0;
 	cmd = ft_lst_to_path(token);
 	pid = fork();
 	if(pid == 0)
@@ -403,6 +405,12 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 	}
 	else
 		wait(&pid);
+	while(cmd[i])
+	{
+		free(cmd[i]);
+		i++;
+	}
+	free(cmd);
 	envir->block_cmd = 1;
 	(void)envir;
 }
@@ -430,6 +438,7 @@ int		ft_pipe(t_envir *envir)
         dup2(fd[1], 1);
 		envir->child = 0;
 		envir->pipeoutfd = fd[1];
+		wait(&f_pid);
         return (1);
     }
 }
@@ -447,11 +456,10 @@ t_token		*ft_token_to_cmd(t_token *token)
 
 void		ft_exec_loop(t_envir *envir, t_token *token)
 {
-	int		status;
-
 	token = ft_token_to_cmd(token);
 	while(token != NULL)
 	{
+		write(envir->n, token->string, ft_strlen(token->string));
 		ft_exec(envir, token);
 		close(envir->fdinput);
 		close(envir->fdoutput);
@@ -462,15 +470,16 @@ void		ft_exec_loop(t_envir *envir, t_token *token)
 		envir->pipeoutfd = -1;
 		envir->pipeinfd = -1;
 		envir->block_cmd = 0;
-		dup2(envir->standardin, 0);
-		dup2(envir->standardout, 1);
-		waitpid(-1, &status, 0);
-		status = WEXITSTATUS(status);
 		if(envir->child == 1)
 		{
+			ft_free_token(envir->start);
+			ft_exit(envir);
 			exit(0);
 		}
+		dup2(envir->standardin, 0);
+		dup2(envir->standardout, 1);
 		envir->child = 0;
+		write(envir->n, "DAD", 3);
 		token = ft_token_to_cmd(token->next);
 	}
 }
@@ -500,25 +509,9 @@ void		ft_exec(t_envir *envir, t_token *token)
 	pid = 0;
 	t_token *previous;
 	t_token *next;
-	static int i;
 	previous = ft_previous_sep(token);
 	next = ft_next_sep(token);
-	if(previous)
-	{
-		write(envir->n, ft_itoa(i), ft_strlen(ft_itoa(i)));
-		i++;
-		write(envir->n, "PREVIOUS : ", 11);
-		write(envir->n, previous->string, ft_strlen(previous->string));
-	}
-	write(envir->n, "\n", 1);
-	if(next)
-	{
-		write(envir->n, ft_itoa(i), ft_strlen(ft_itoa(i)));
-		i++;
-		write(envir->n, "NEXT : ", 7);
-		write(envir->n, next->string, ft_strlen(next->string));
-	}
-	write(envir->n, "\n", 1);
+
 	if(previous && previous->type == RIGHT)
 		ft_redir_right(envir, token);
 	if(previous && previous->type == LEFT)
@@ -596,8 +589,20 @@ t_token		*ft_tokenize(char *line)
 		elem1 = elem1->prev;
 	}
 	//printf("Printing the created list:\n");
-	ft_print_list(elem1);
+	//ft_print_list(elem1);
 	return (elem1);
+}
+
+void	ft_free_token(t_token *token)
+{
+	t_token *temp;
+	while(token)
+	{
+		temp = token->next;
+		free(token->string);
+		free(token);
+		token = temp;
+	}
 }
 
 void	ft_prompt(t_envir *envir)
@@ -609,9 +614,6 @@ void	ft_prompt(t_envir *envir)
 	while(1)
 	{
 		ft_putstr(BLUE"=> Minishell:"NORMAL);
-		write(envir->n, "\n", 1);
-		write(envir->n, "exit loop : ", 12);
-		write(envir->n, "\n", 1);
     	get_next_line(0, &line);
 		if(line == NULL)
 		{
@@ -620,6 +622,8 @@ void	ft_prompt(t_envir *envir)
 		}
 		envir->start = ft_tokenize(line);
 		ft_exec_loop(envir, envir->start);
+		ft_free_token(envir->start);
+		free(line);
 	}
 }
 

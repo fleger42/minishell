@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/29 14:48:16 by user42            #+#    #+#             */
-/*   Updated: 2021/01/12 10:49:48 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/16 01:15:39 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,8 @@ typedef struct	s_envir
 	int pipeinfd;
 	int standardin;
 	int standardout;
+	int n;
+	int block_cmd;
 	int		shlv;
 	char 	**envp;
 	char	**args;

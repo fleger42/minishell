@@ -11,6 +11,7 @@ void    ft_pipe(char **cmd1, char **cmd2)
     int fd[2];
     int f_pid;
 
+    execvp(cmd1[0], cmd1);
     if(pipe(fd) == -1)
         strerror(errno);
     if((f_pid = fork()) == -1)
@@ -19,8 +20,6 @@ void    ft_pipe(char **cmd1, char **cmd2)
     {
         close(fd[0]);
         dup2(fd[1], 1);
-        close(fd[1]);
-        execvp(cmd1[0], cmd1);
        
     }
     else //In parent
@@ -70,7 +69,8 @@ char	*ft_redirection_left(char *line, char *replace)
 int main(int argc, char *argv[])
 {
     int i;
-
+    char    *cmd1[] = {"echo", "abcde", NULL};
+    char    *cmd2[] = {"rev", NULL};
     i = 0;
     /*char *list_cmd[5][4] = {{"echo", "abcdefg", NULL}, {"tr", "a", "1", NULL}, {"tr", "b", "2", NULL}, {"tr", "c", "3", NULL}, {"tr", "a", "1", NULL}};
     while(i < 5)
@@ -79,7 +79,5 @@ int main(int argc, char *argv[])
         ft_pipe(list_cmd[i], list_cmd[i + 1]);
         i++;
     }*/
-    char str[] = "Ceci est un test";
-    str[0] = (char)(-str[0]);
-    printf("%d\n", str[0]);
+    ft_pipe(cmd1, cmd2);
 }  

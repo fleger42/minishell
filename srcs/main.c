@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/12 10:55:51 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/16 01:26:59 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -398,16 +398,12 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 	pid = fork();
 	if(pid == 0)
 	{
-		printf(RED"Launch cmd [%s]\n", cmd[0]);
-		printf(NORMAL"\n");
 		execvp(cmd[0], cmd);
 		exit(0);
 	}
 	else
 		wait(&pid);
-	close(envir->pipeoutfd);
-	close(envir->pipeinfd);
-	printf("exit_exec_cmd\n");
+	envir->block_cmd = 1;
 	(void)envir;
 }
 
@@ -422,17 +418,18 @@ int		ft_pipe(t_envir *envir)
        strerror(errno);
     if(f_pid == 0) //In child
     {
-        close(fd[0]);
-        dup2(fd[1], 1);
+		close(fd[1]);
+        dup2(fd[0], 0);
 		envir->child = 1;
-		envir->pipeoutfd = fd[1];
+		envir->pipeinfd = fd[0];
         return (2);
     }
     else //In parent
     {
-		close(fd[1]);
-        dup2(fd[0], 0);
-		envir->pipeinfd = fd[0];
+        close(fd[0]);
+        dup2(fd[1], 1);
+		envir->child = 0;
+		envir->pipeoutfd = fd[1];
         return (1);
     }
 }
@@ -442,6 +439,8 @@ t_token		*ft_token_to_cmd(t_token *token)
 	while(token && token->type != CMD)
 	{
 		token = token->next;
+		if(token && token->type == CMD && token->prev->type != NEXT)
+			token = token->next;
 	}
 	return(token);
 }
@@ -449,13 +448,11 @@ t_token		*ft_token_to_cmd(t_token *token)
 void		ft_exec_loop(t_envir *envir, t_token *token)
 {
 	int		status;
-	
+
 	token = ft_token_to_cmd(token);
 	while(token != NULL)
 	{
-		envir->child = 0;
 		ft_exec(envir, token);
-		token = token->next;
 		close(envir->fdinput);
 		close(envir->fdoutput);
 		close(envir->pipeoutfd);
@@ -464,13 +461,36 @@ void		ft_exec_loop(t_envir *envir, t_token *token)
 		envir->fdoutput = -1;
 		envir->pipeoutfd = -1;
 		envir->pipeinfd = -1;
+		envir->block_cmd = 0;
+		dup2(envir->standardin, 0);
+		dup2(envir->standardout, 1);
 		waitpid(-1, &status, 0);
+		status = WEXITSTATUS(status);
 		if(envir->child == 1)
 		{
 			exit(0);
 		}
-		token = ft_token_to_cmd(token);
+		envir->child = 0;
+		token = ft_token_to_cmd(token->next);
 	}
+}
+
+t_token *ft_next_sep(t_token *token)
+{
+	while(token && (token->type == CMD || token->type == ARG))
+	{
+		token = token->next;
+	}
+	return(token);
+}
+
+t_token *ft_previous_sep(t_token *token)
+{
+	while(token && (token->type == CMD || token->type == ARG))
+	{
+		token = token->prev;
+	}
+	return(token);
 }
 
 void		ft_exec(t_envir *envir, t_token *token)
@@ -478,16 +498,38 @@ void		ft_exec(t_envir *envir, t_token *token)
 	int pid;
 
 	pid = 0;
-	//printf("EXEEEC\n");
-	if(token->prev && token->prev->type == RIGHT)
+	t_token *previous;
+	t_token *next;
+	static int i;
+	previous = ft_previous_sep(token);
+	next = ft_next_sep(token);
+	if(previous)
+	{
+		write(envir->n, ft_itoa(i), ft_strlen(ft_itoa(i)));
+		i++;
+		write(envir->n, "PREVIOUS : ", 11);
+		write(envir->n, previous->string, ft_strlen(previous->string));
+	}
+	write(envir->n, "\n", 1);
+	if(next)
+	{
+		write(envir->n, ft_itoa(i), ft_strlen(ft_itoa(i)));
+		i++;
+		write(envir->n, "NEXT : ", 7);
+		write(envir->n, next->string, ft_strlen(next->string));
+	}
+	write(envir->n, "\n", 1);
+	if(previous && previous->type == RIGHT)
 		ft_redir_right(envir, token);
-	if(token->prev && token->prev->type == LEFT)
+	if(previous && previous->type == LEFT)
 		ft_redir_left(envir, token);
-	if(token->prev && token->prev->type == DOUBLERIGHT)
+	if(previous && previous->type == DOUBLERIGHT)
 		ft_redir_doubleright(envir, token);
-	if(token->prev && token->prev->type == PIPE)
+	if(previous && previous->type == PIPE)
 		pid = ft_pipe(envir);
-	if((token->prev == NULL || token->prev->type == NEXT || token->prev->type == PIPE) && pid != 1)
+	if(next && next->type != NEXT && pid != 1)
+		ft_exec(envir, next->next);
+	if((previous == NULL || previous->type == NEXT || previous->type == PIPE) && pid != 1 && envir->block_cmd == 0)
 		ft_exec_cmd(envir, token);
 }	
 
@@ -553,7 +595,7 @@ t_token		*ft_tokenize(char *line)
 		//printf("Reversing: On token %s\n", elem1->string);
 		elem1 = elem1->prev;
 	}
-	printf("Printing the created list:\n");
+	//printf("Printing the created list:\n");
 	ft_print_list(elem1);
 	return (elem1);
 }
@@ -567,6 +609,9 @@ void	ft_prompt(t_envir *envir)
 	while(1)
 	{
 		ft_putstr(BLUE"=> Minishell:"NORMAL);
+		write(envir->n, "\n", 1);
+		write(envir->n, "exit loop : ", 12);
+		write(envir->n, "\n", 1);
     	get_next_line(0, &line);
 		if(line == NULL)
 		{

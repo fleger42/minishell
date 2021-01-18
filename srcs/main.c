@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fleger <fleger@student.42.fr>              +#+  +:+       +#+        */
+/*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/16 16:58:40 by fleger           ###   ########.fr       */
+/*   Updated: 2021/01/17 23:58:30 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,6 +401,7 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 	if(pid == 0)
 	{
 		execvp(cmd[0], cmd);
+		printf(RED"Command not found : %s\n"NORMAL, cmd[0]);
 		exit(0);
 	}
 	else
@@ -436,9 +437,7 @@ int		ft_pipe(t_envir *envir)
     {
         close(fd[0]);
         dup2(fd[1], 1);
-		envir->child = 0;
 		envir->pipeoutfd = fd[1];
-		wait(&f_pid);
         return (1);
     }
 }
@@ -454,32 +453,42 @@ t_token		*ft_token_to_cmd(t_token *token)
 	return(token);
 }
 
+void		ft_reset(t_envir *envir)
+{
+	if(envir->fdinput != -1)
+		close(envir->fdinput);
+	if(envir->fdoutput != -1)
+		close(envir->fdoutput);
+	if(envir->pipeoutfd != -1)
+		close(envir->pipeoutfd);
+	if(envir->pipeinfd != -1)
+		close(envir->pipeinfd);
+	envir->fdoutput = -1;
+	envir->pipeoutfd = -1;
+	envir->pipeinfd = -1;
+	envir->block_cmd = 0;
+	dup2(envir->standardin, 0);
+	dup2(envir->standardout, 1);
+}
 void		ft_exec_loop(t_envir *envir, t_token *token)
 {
+	int pid;
+
 	token = ft_token_to_cmd(token);
 	while(token != NULL)
 	{
-		write(envir->n, token->string, ft_strlen(token->string));
+		//write(envir->n, token->string, ft_strlen(token->string));
 		ft_exec(envir, token);
-		close(envir->fdinput);
-		close(envir->fdoutput);
-		close(envir->pipeoutfd);
-		close(envir->pipeinfd);
-		envir->fdinput = -1;
-		envir->fdoutput = -1;
-		envir->pipeoutfd = -1;
-		envir->pipeinfd = -1;
-		envir->block_cmd = 0;
+		ft_reset(envir);
+		waitpid(-1, &pid, 0);
 		if(envir->child == 1)
 		{
 			ft_free_token(envir->start);
 			ft_exit(envir);
 			exit(0);
 		}
-		dup2(envir->standardin, 0);
-		dup2(envir->standardout, 1);
 		envir->child = 0;
-		write(envir->n, "DAD", 3);
+		//write(envir->n, "DAD", 3);
 		token = ft_token_to_cmd(token->next);
 	}
 }

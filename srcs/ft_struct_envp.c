@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/21 04:37:22 by user42            #+#    #+#             */
-/*   Updated: 2021/01/16 01:24:01 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/17 19:08:21 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,10 @@ t_envir		ft_create_t_envir(char **envp, char **av)
 	envir.block_cmd = 0;
 	envir.standardin = dup(0);
 	envir.standardout = dup(1);
+	envir.fdoutput = -1;
+	envir.fdinput = -1;
+	envir.pipeoutfd = -1;
+	envir.pipeinfd = -1;
 	envir.n = open("fichier.txt", O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
 	return (envir);
 }

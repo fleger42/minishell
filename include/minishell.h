@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fleger <fleger@student.42.fr>              +#+  +:+       +#+        */
+/*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/29 14:48:16 by user42            #+#    #+#             */
-/*   Updated: 2021/01/16 16:13:03 by fleger           ###   ########.fr       */
+/*   Updated: 2021/01/19 06:21:15 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ typedef struct	s_sig
 	int				sigint;
 	int				sigexit;
 }				t_sig;
-
+char	*ft_get_path(t_envir *envir, char *cmd);
 void		ft_error(char *str);
 int			ft_verif_unset(char *str1, char *str2);
 void		ft_exit(t_envir *envir);
@@ -110,8 +110,8 @@ void		ft_verif_cmd(char *str, char *line, t_envir *envir);
 int			ft_verif_exit(char *first, char *second);
 char		*char_walk(char *str);
 char		**ft_split(const char *s, const char *c);
-void		ft_exec_nonbuiltin(t_envir *envir, char *path);
-void		ft_exec_builtin(t_envir *envir);
+void	ft_exec_nonbuiltin(t_envir *envir, char **cmd);
+void	ft_exec_builtin(t_envir *envir, char **cmd);
 int			ft_set_shlvl(char **envp, int shlvl);
 char		*ft_search_dir(char *bin, char *cmd);
 int			ft_compare_space(char *str1, char *str2);

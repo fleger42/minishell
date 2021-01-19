@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/17 23:58:30 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/19 06:40:03 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,31 +67,25 @@ int		ft_is_builtin(char *str)
 	return (0);
 }
 
-void	ft_get_a_path(t_envir *envir)
+char	*ft_get_path(t_envir *envir, char *cmd)
 {
 	int i;
-
+	char **all_bin;
+	char *path;
 	i = -1;
-	envir->all_bin = ft_split(ft_get(envir->envp, "PATH"), ":");
-	while(envir->all_bin[++i] != NULL && envir->a_path == NULL)
-		envir->a_path = ft_search_dir(envir->all_bin[i], envir->cmd);
-	i = -1;
-	while(envir->all_bin[++i])
-		free(envir->all_bin[i]);
-	free(envir->all_bin);
-}
 
-void	ft_execution(t_envir *envir)
-{
-	ft_get_a_path(envir);
-	if(ft_is_builtin(envir->cmd))
-		ft_exec_builtin(envir);
-	else if(envir->a_path != NULL)
-		ft_exec_nonbuiltin(envir, envir->a_path);
-	else
-		ft_exec_nonbuiltin(envir, envir->cmd);
-	free(envir->a_path);
-	envir->a_path = NULL;
+	path = NULL;
+	all_bin = ft_split(ft_get(envir->envp, "PATH"), ":");
+	while(all_bin[++i] != NULL && path == NULL)
+	{
+
+		path = ft_search_dir(all_bin[i], cmd);
+	}
+	i = -1;
+	while(all_bin[++i])
+		free(all_bin[i]);
+	free(all_bin);
+	return (path);
 }
 
 void	ft_exit(t_envir *envir)
@@ -345,16 +339,6 @@ void		ft_redir_left(t_envir *envir, t_token *token)
 	dup2(envir->fdinput, STDIN_FILENO);
 }
 
-void    ft_sxcfsf(char *str, t_envir *envir, char *line)
-{
-        char *path;
-        path = ft_catpy(ft_get(envir->envp, "PATH"), str);
-        char *argv[] = {path, line, NULL};
-        if (strcmp(envir->prog_name, str) == 0)
-                ft_upgrade_shlv(envir->envp);
-        execve(path, argv, envir->envp);
-}
-
 char		**ft_lst_to_path(t_token *start)
 {
 	t_token *token;
@@ -389,23 +373,26 @@ char		**ft_lst_to_path(t_token *start)
 	return (cmd);
 }
 
+int			ft_isbuiltin(char *str)
+{
+	if(ft_strcmp(str, "echo") == 0 || ft_strcmp(str, "cd") == 0 || ft_strcmp(str, "env") == 0 || ft_strcmp(str, "export") == 0 || ft_strcmp(str, "unset") == 0) 
+		return (1);
+	return(0);
+}
+
 void		ft_exec_cmd(t_envir *envir, t_token *token)
 {
 	char	**cmd;
-	pid_t pid;
 	int i;
 
 	i = 0;
 	cmd = ft_lst_to_path(token);
-	pid = fork();
-	if(pid == 0)
-	{
-		execvp(cmd[0], cmd);
-		printf(RED"Command not found : %s\n"NORMAL, cmd[0]);
+	if(ft_strcmp(cmd[0], "exit") == 0)
 		exit(0);
-	}
+	if(ft_isbuiltin(cmd[0]))
+		ft_exec_builtin(envir, cmd);
 	else
-		wait(&pid);
+		ft_exec_nonbuiltin(envir, cmd);
 	while(cmd[i])
 	{
 		free(cmd[i]);

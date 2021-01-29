@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/30 16:41:00 by user42            #+#    #+#             */
-/*   Updated: 2020/10/19 23:11:13 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/20 20:22:45 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,10 +56,16 @@ char	*ft_realloc(char *str, int k)
 {
 	char	*temp;
 
-	temp = ft_strdup(&str[k + 1]);
+	if(str[k + 1] == '\0')
+	{
+		temp = NULL;
+	}
+	else
+	{
+		temp = ft_strdup(&str[k + 1]);
+	}
 	free(str);
-	str = temp;
-	return (str);
+	return (temp);
 }
 
 int		get_next_line(int fd, char **line)
@@ -89,6 +95,8 @@ int		get_next_line(int fd, char **line)
 	else if (str[k] == '\n')
 	{
 		str = ft_realloc(str, k);
+		if(str == NULL)
+			return (0);
 		return (1);
 	}
 	return (-1);

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/19 06:40:03 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/29 14:26:07 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,11 +74,10 @@ char	*ft_get_path(t_envir *envir, char *cmd)
 	char *path;
 	i = -1;
 
-	path = NULL;
+	path = NULL;	
 	all_bin = ft_split(ft_get(envir->envp, "PATH"), ":");
 	while(all_bin[++i] != NULL && path == NULL)
 	{
-
 		path = ft_search_dir(all_bin[i], cmd);
 	}
 	i = -1;
@@ -86,12 +85,6 @@ char	*ft_get_path(t_envir *envir, char *cmd)
 		free(all_bin[i]);
 	free(all_bin);
 	return (path);
-}
-
-void	ft_exit(t_envir *envir)
-{
-	ft_free_t_envir(envir);
-	exit(1);
 }
 
 int	ft_verif_dollar(char *str1, char *str2)
@@ -154,7 +147,7 @@ char	*ft_replace_dollar(t_envir *envir, char *str, int *length)
 	if(str[i] == '?')
 	{
 		*length = 1;
-		return(ft_itoa(envir->return_code));
+		return(ft_itoa(envir->exit_code));
 	}
 	if(str[i] == ' ')
 	{
@@ -190,7 +183,7 @@ char	*ft_dollar(t_envir *envir, char *str)
 				start[j] = str[j];
 			start[j] = '\0';
 			if(str[j + 1] == '?')
-				temp = ft_itoa(envir->return_code);
+				temp = ft_itoa(envir->exit_code);
 			temp = ft_replace_dollar(envir, str + 1 + i, &length);
 			if(temp != NULL)
 				temp = ft_catpy(start, temp);
@@ -319,7 +312,7 @@ void		ft_redir_doubleright(t_envir *envir, t_token *token)
 	envir->fdoutput = open(token->string, O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
 	if(envir->fdoutput == -1)
 	{
-		ft_error("Cant open file\n");
+		ft_error("Cant open file");
 	}
 	dup2(envir->fdoutput, STDOUT_FILENO);
 }
@@ -327,7 +320,7 @@ void		ft_redir_right(t_envir *envir, t_token *token)
 {
 	envir->fdoutput = open(token->string, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
 	if(envir->fdoutput == -1)
-		ft_error("Cant open file\n");
+		ft_error("Cant open file");
 	dup2(envir->fdoutput, STDOUT_FILENO);
 }
 
@@ -335,7 +328,7 @@ void		ft_redir_left(t_envir *envir, t_token *token)
 {
 	envir->fdinput = open(token->string, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
 	if(envir->fdinput == -1)
-		ft_error("Cant open file\n");
+		ft_error("Cant open file");
 	dup2(envir->fdinput, STDIN_FILENO);
 }
 
@@ -364,12 +357,6 @@ char		**ft_lst_to_path(t_token *start)
 		token = token->next;
 	}
 	cmd[count] = NULL;
-	count = 0;
-	while(cmd[count])
-	{
-		//printf("[%s] \n", cmd[count]);
-		count++;
-	}
 	return (cmd);
 }
 
@@ -388,17 +375,21 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 	i = 0;
 	cmd = ft_lst_to_path(token);
 	if(ft_strcmp(cmd[0], "exit") == 0)
+	{
+		ft_free_token(envir->start);
+		ft_free_t_envir(envir);
+		while(cmd[i])
+		{
+			free(cmd[i]);
+			i++;
+		}
+		free(cmd);
 		exit(0);
+	}
 	if(ft_isbuiltin(cmd[0]))
 		ft_exec_builtin(envir, cmd);
 	else
 		ft_exec_nonbuiltin(envir, cmd);
-	while(cmd[i])
-	{
-		free(cmd[i]);
-		i++;
-	}
-	free(cmd);
 	envir->block_cmd = 1;
 	(void)envir;
 }
@@ -424,6 +415,7 @@ int		ft_pipe(t_envir *envir)
     {
         close(fd[0]);
         dup2(fd[1], 1);
+		envir->pipe_dad = 1; 
 		envir->pipeoutfd = fd[1];
         return (1);
     }
@@ -460,22 +452,31 @@ void		ft_reset(t_envir *envir)
 void		ft_exec_loop(t_envir *envir, t_token *token)
 {
 	int pid;
+	int temp;
 
 	token = ft_token_to_cmd(token);
-	while(token != NULL)
+	temp = 0;
+	pid = 0;
+	while(token != NULL && ctrl_c_called == 0)
 	{
-		//write(envir->n, token->string, ft_strlen(token->string));
+		envir->pipe_dad = 0;
 		ft_exec(envir, token);
 		ft_reset(envir);
 		waitpid(-1, &pid, 0);
+		if(WIFEXITED(pid))
+			pid = WEXITSTATUS(pid);
+		if(envir->pipe_dad == 1)
+		{
+			envir->exit_code = pid;
+		}
 		if(envir->child == 1)
 		{
 			ft_free_token(envir->start);
-			ft_exit(envir);
-			exit(0);
+			temp = envir->exit_code;
+			ft_free_t_envir(envir);
+			exit(temp);
 		}
 		envir->child = 0;
-		//write(envir->n, "DAD", 3);
 		token = ft_token_to_cmd(token->next);
 	}
 }
@@ -498,7 +499,7 @@ t_token *ft_previous_sep(t_token *token)
 	return(token);
 }
 
-void		ft_exec(t_envir *envir, t_token *token)
+void	ft_exec(t_envir *envir, t_token *token)
 {
 	int pid;
 
@@ -534,7 +535,7 @@ int			ft_get_type_token(t_token *token)
 		return (DOUBLERIGHT);
 	if(ft_strcmp(token->string, ">") == 0)
 		return (RIGHT);
-	if(token->prev == NULL || token->prev->type == RIGHT || token->prev->type == PIPE)
+	if(token->prev == NULL || token->prev->type == RIGHT || token->prev->type == PIPE || token->prev->type == NEXT)
 		return (CMD);
 	else
 		return (ARG);
@@ -609,17 +610,37 @@ void	ft_prompt(t_envir *envir)
 	ft_signal_init();
 	while(1)
 	{
-		ft_putstr(BLUE"=> Minishell:"NORMAL);
-    	get_next_line(0, &line);
+		if(ctrl_c_called == 1)
+		{
+			envir->exit_code = 130;
+			ctrl_c_called = 0;
+		}
+		else
+		{
+			if(envir->exit_code == 0)
+				write(STDERR_FILENO, BLUE"=> Minishell:"NORMAL, 25);
+			else
+			{
+				write(STDERR_FILENO, RED"=> ", 10);
+				write(STDERR_FILENO, BLUE"Minishell:"NORMAL, 22);
+			}
+		}
+		//int fd = open("valgrind_cmd.txt", O_RDONLY);
+		get_next_line(0, &line);
+		ctrl_c_called = 0;
 		if(line == NULL)
 		{
 			free(line);
-			ft_exit(envir);
+			ft_free_t_envir(envir);
+			exit(0);
 		}
+		line = ft_dollar(envir, line);
 		envir->start = ft_tokenize(line);
-		ft_exec_loop(envir, envir->start);
-		ft_free_token(envir->start);
 		free(line);
+		in_loop = 1;
+		ft_exec_loop(envir, envir->start);
+		in_loop = 0;
+		ft_free_token(envir->start);
 	}
 }
 
@@ -627,6 +648,7 @@ int main(int ac, char **av, char **envp)
 {
 	t_envir *envir;
 	envir = ft_malloc_t_envir(envp, av);
+	in_loop = 0;
 	ft_set_env(envir->envp, envir->prog_name);
 	ft_prompt(envir);
 	(void)ac;

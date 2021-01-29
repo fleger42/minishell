@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 19:14:31 by user42            #+#    #+#             */
-/*   Updated: 2021/01/04 05:00:59 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/27 18:44:04 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	ft_error(char *str)
 {
-	ft_putstr(str);
+	write(2, str, ft_strlen(str));
 	ft_putchar('\n');
 }
 
@@ -153,54 +153,6 @@ char *char_walk(char *str)
 	while(str[i] && str[i] == ' ')
 		i++;
 	return (str + i);
-}
-
-int		len(long nb)
-{
-	int		len;
-
-	len = 0;
-	if (nb < 0)
-	{
-		nb = nb * -1;
-		len++;
-	}
-	while (nb > 0)
-	{
-		nb = nb / 10;
-		len++;
-	}
-	return (len);
-}
-
-char	*ft_itoa(int nb)
-{
-	char *str;
-	long	n;
-	int		i;
-
-	n = nb;
-	i = len(n);
-	if (!(str = (char*)malloc(sizeof(char) * (i + 1))))
-		return (NULL);
-	str[i--] = '\0';
-	if (n == 0)
-	{
-		str[0] = 48;
-		return (str);
-	}
-	if (n < 0)
-	{
-		str[0] = '-';
-		n = n * -1;
-	}
-	while (n > 0)
-	{
-		str[i] = 48 + (n % 10);
-		n = n / 10;
-		i--;
-	}
-	return (str);
 }
 
 void	ft_putchar(char c)

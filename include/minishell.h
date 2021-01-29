@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/29 14:48:16 by user42            #+#    #+#             */
-/*   Updated: 2021/01/19 06:21:15 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/27 17:34:04 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,6 @@ typedef struct	s_token
 	struct s_token *next;
 }				t_token;
 
-void	ft_free_token(t_token *token);
 typedef struct	s_envir
 {
 	t_token *start;
@@ -73,7 +72,8 @@ typedef struct	s_envir
 	char	**av;
 	char	**all_bin;
 	char	*a_path;
-	int		return_code;
+	int		pipe_dad;
+	int		exit_code;
 }				t_envir;
 
 typedef struct	s_sig
@@ -81,6 +81,12 @@ typedef struct	s_sig
 	int				sigint;
 	int				sigexit;
 }				t_sig;
+
+int		ctrl_c_called;
+int 	in_loop;
+int		ft_set_pwd(char **envp, char *oldpwd);
+int		ft_set_oldpwd(char **envp, char *oldpwd);
+void	ft_free_token(t_token *token);
 char	*ft_get_path(t_envir *envir, char *cmd);
 void		ft_error(char *str);
 int			ft_verif_unset(char *str1, char *str2);

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 18:58:54 by user42            #+#    #+#             */
-/*   Updated: 2020/10/07 03:04:37 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/26 09:28:56 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ char	*ft_get(char **envp, char *str)
 	i = 0;
 	while(envp[i] != NULL)
 	{
-		if(strncmp(envp[i], str, ft_strlen(str)) == 0)
+		if(ft_strncmp(envp[i], str, ft_strlen(str)) == 0)
 			return(envp[i] + ft_strlen(str) + 1);
 		i++;
 	}

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/09 19:59:26 by user42            #+#    #+#             */
-/*   Updated: 2020/10/06 18:03:44 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/20 01:46:48 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ int ft_env(char **av, t_envir *envir)
 	{
 		ft_putstr("Invalid arg or option for env");
 		ft_putchar('\n');
-		return (0);
+		return (1);
 	}
 	while(envir->envp[i] != NULL)
 	{
@@ -29,5 +29,5 @@ int ft_env(char **av, t_envir *envir)
 		ft_putchar('\n');
 		i++;
 	}
-	return (1);
+	return (0);
 }

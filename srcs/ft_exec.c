@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 19:39:52 by user42            #+#    #+#             */
-/*   Updated: 2021/01/19 07:04:49 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/27 18:33:57 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ char	*ft_search_dir(char *bin, char *cmd)
 	path_ret = NULL;
 	dirp = opendir(bin);
 	if (!dirp)
-		return (NULL);
+		return (ft_strdup(cmd));
 	while((r_dir = readdir(dirp)))
 	{
 		if(strcmp(r_dir->d_name, cmd) == 0)
@@ -35,31 +35,55 @@ char	*ft_search_dir(char *bin, char *cmd)
 	return (path_ret);
 }
 
+/*int		ft_get_exit_code(char *path)
+{
+	int fd;
+	DIR *folder;
+
+	folder = opendir(path);
+	fd = open(path, O_WRONLY);
+	if(ft_strchr)
+
+}*/
+
 void	ft_exec_nonbuiltin(t_envir *envir, char **cmd)
 {
 	pid_t	pid;
 	char *path;
 
+	envir->exit_code = 0;
 	path = ft_get_path(envir, cmd[0]);
 	pid = fork();
 	if(pid == 0)
 	{
 		if(strcmp(cmd[0], envir->prog_name) == 0)
 			ft_set_shlvl(envir->envp, envir->shlv++);
-		if(execve(path, cmd, envir->envp) == -1)
+		if(execve(path, cmd, envir->envp) < 0)
 		{
-			ft_putstr(cmd[0]);
-			ft_putchar(':');
-			ft_putstr(RED"Command not found\n"NORMAL);
+			ft_error(strerror(errno));
+			if(errno == EAGAIN)
+				exit(126);
+			else
+				exit(127);
 		}
-			exit(1);
-		
 	}
 	else if(pid == -1)
 		ft_putstr(RED"Error, pid = -1\n");
 	else
-		wait(&pid);
-	
+		waitpid(pid, &envir->exit_code, 0);
+	if(WIFEXITED(pid))
+	{
+		envir->exit_code = WEXITSTATUS(pid);
+	}
+	else if(ctrl_c_called)
+	{
+		envir->exit_code = 130;
+	}
+	else
+	{
+		envir->exit_code = envir->exit_code/256;
+	}
+	free(path);
 }
 
 void	ft_exec_builtin(t_envir *envir, char **cmd)
@@ -72,7 +96,7 @@ void	ft_exec_builtin(t_envir *envir, char **cmd)
 	while(builtin[i] != NULL)
 	{
 		if (strcmp(builtin[i], cmd[0]) == 0)
-			tab_fonction[i](cmd, envir);
+			envir->exit_code = tab_fonction[i](cmd, envir);
 		i++;
 	}
 }

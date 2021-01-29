@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/09 06:38:27 by user42            #+#    #+#             */
-/*   Updated: 2021/01/19 06:04:47 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/20 01:46:21 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,5 +93,5 @@ int ft_echo(char **av, t_envir *envir)
 	if(n_option == 0)
 		ft_putchar('\n');
 	(void)envir;
-	return (1);
+	return (0);
 }

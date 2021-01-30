@@ -16,20 +16,23 @@ void	ft_signal_handler(int signal)
 {
 	if(signal == SIGINT)
 	{
-		if(in_loop == 1)
+		if(in_child == 0)
 		{
-			write(STDERR_FILENO, "\b\b  ", 4);
-			write(STDERR_FILENO, "\n", 1);
-			write(STDERR_FILENO, RED"=> ", 10);
-			write(STDERR_FILENO, BLUE"Minishell:"NORMAL, 22);
+			if(in_loop == 1)
+			{
+				write(STDERR_FILENO, "\b\b  ", 4);
+				write(STDERR_FILENO, "\n", 1);
+				write(STDERR_FILENO, RED"=> ", 10);
+				write(STDERR_FILENO, BLUE"Minishell:"NORMAL, 22);
+			}
+			else
+			{
+				write(STDERR_FILENO, "\b\b  ", 4);
+				write(STDERR_FILENO, "\n", 1);
+				write(STDERR_FILENO, BLUE"=> Minishell:"NORMAL, 25);
+			}
+			ctrl_c_called = 1;
 		}
-		else
-		{
-			write(STDERR_FILENO, "\b\b  ", 4);
-			write(STDERR_FILENO, "\n", 1);
-			write(STDERR_FILENO, BLUE"=> Minishell:"NORMAL, 25);
-		}
-		ctrl_c_called = 1;
 	}
 }
 

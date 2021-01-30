@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/29 14:26:07 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/30 16:00:37 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,24 +87,6 @@ char	*ft_get_path(t_envir *envir, char *cmd)
 	return (path);
 }
 
-int	ft_verif_dollar(char *str1, char *str2)
-{
-	int i;
-
-	i = 0;
-	while(str1[i] != '=')
-	{
-		if(str1[i] != str2[i])
-		{
-			return (0);
-		}
-		i++;
-	}
-	if(str2[i] == '=' || str2[i] == ' ' || str2[i] == '\0' || str2[i] == '$' || str2[i] == '"' || str2[i] == '-')
-		return (1);
-	return (0);
-}
-
 char *ft_walk_until_equal(char *str, int *length)
 {
 	int i;
@@ -132,6 +114,25 @@ int		ft_isalpha_maj(char c)
 	return (0);
 }
 
+int	ft_verif_dollar(char *str1, char *str2)
+{
+	int i;
+
+	i = 0;
+	while(str1[i] != '=')
+	{
+		if(str1[i] != str2[i])
+		{
+			return (0);
+		}
+		i++;
+	}
+	if(!(ft_isdigit(str2[i]) || ft_isalpha_maj(str2[i]) || ft_isalpha_min(str2[i]) || str2[i] == '_'))
+		return (1);
+	return (0);
+}
+
+
 char	*ft_replace_dollar(t_envir *envir, char *str, int *length)
 {
 	int i;
@@ -140,7 +141,7 @@ char	*ft_replace_dollar(t_envir *envir, char *str, int *length)
 	while(envir->envp[i] != NULL)
 	{
 		if(ft_verif_dollar(envir->envp[i], str) == 1)
-			return(ft_walk_until_equal(envir->envp[i], length));
+			return(ft_strdup(ft_walk_until_equal(envir->envp[i], length)));
 		i++;
 	}
 	i = 0;
@@ -170,9 +171,13 @@ char	*ft_dollar(t_envir *envir, char *str)
 	int		i;
 	char	*temp;
 	char	*start;
+	char	*temp2;
 	int		j;
 	int		length;
 	i = 0;
+	temp2 = NULL;
+	temp = NULL;
+	start = NULL;
 	while(str[i])
 	{
 		if(str[i] == '$' && str[i + 1] != '\0' && str[i + 1] != ' ')
@@ -182,11 +187,13 @@ char	*ft_dollar(t_envir *envir, char *str)
 			while(++j<i)
 				start[j] = str[j];
 			start[j] = '\0';
-			if(str[j + 1] == '?')
-				temp = ft_itoa(envir->exit_code);
 			temp = ft_replace_dollar(envir, str + 1 + i, &length);
 			if(temp != NULL)
-				temp = ft_catpy(start, temp);
+			{
+				temp2 = temp;
+				temp = ft_catpy(start, temp2);
+				free(temp2);
+			}
 			else
 				temp = ft_strdup(start);
 			free(start);
@@ -362,7 +369,8 @@ char		**ft_lst_to_path(t_token *start)
 
 int			ft_isbuiltin(char *str)
 {
-	if(ft_strcmp(str, "echo") == 0 || ft_strcmp(str, "cd") == 0 || ft_strcmp(str, "env") == 0 || ft_strcmp(str, "export") == 0 || ft_strcmp(str, "unset") == 0) 
+	if(ft_strcmp(str, "echo") == 0 || ft_strcmp(str, "cd") == 0 || ft_strcmp(str, "env") == 0 || ft_strcmp(str, "export") == 0 
+	|| ft_strcmp(str, "unset") == 0 || ft_strcmp(str, "pwd") == 0) 
 		return (1);
 	return(0);
 }
@@ -390,6 +398,10 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 		ft_exec_builtin(envir, cmd);
 	else
 		ft_exec_nonbuiltin(envir, cmd);
+	i = -1;
+	while(cmd[++i])
+		free(cmd[i]);
+	free(cmd);
 	envir->block_cmd = 1;
 	(void)envir;
 }
@@ -409,6 +421,7 @@ int		ft_pipe(t_envir *envir)
         dup2(fd[0], 0);
 		envir->child = 1;
 		envir->pipeinfd = fd[0];
+		in_child = 1;
         return (2);
     }
     else //In parent
@@ -459,6 +472,7 @@ void		ft_exec_loop(t_envir *envir, t_token *token)
 	pid = 0;
 	while(token != NULL && ctrl_c_called == 0)
 	{
+		in_child = 0;
 		envir->pipe_dad = 0;
 		ft_exec(envir, token);
 		ft_reset(envir);
@@ -602,6 +616,57 @@ void	ft_free_token(t_token *token)
 	}
 }
 
+int		ft_issep(char c)
+{
+	if(c == ';' || c == '|' || c == '<' || c == '>')
+		return (1);
+	return (0);
+
+}
+
+char	*ft_malloc_new_line(char *line)
+{
+	int i;
+	int count;
+	char *new_line;
+
+	i = 0;
+	count = 0;
+	while(line[i])
+	{
+		if((i > 0 && ft_issep(line[i]) && line[i - 1] != ' ') || (i > 0 && ft_issep(line[i - 1]) && line[i] != ' '))
+		{
+			count++;
+		}
+		count++;
+		i++;
+	}
+	new_line = malloc(sizeof(char) * (count + 1));
+	return (new_line);
+}
+
+char	*ft_add_spacesep(char *line)
+{
+	int i;
+	int j;
+	char *new_line;
+	i = 0;
+	j = 0;
+	new_line = ft_malloc_new_line(line);
+	while(line[i])
+	{
+		if((i > 0 && ft_issep(line[i]) && line[i - 1] != ' ') || (i > 0 && ft_issep(line[i - 1]) && line[i] != ' '))
+		{
+			new_line[j++] = ' ';
+		}
+		new_line[j++] = line[i];
+		i++;
+	}
+	new_line[j] = '\0';
+	free(line);
+	return (new_line);
+}
+
 void	ft_prompt(t_envir *envir)
 {
 	char    *line;
@@ -635,6 +700,7 @@ void	ft_prompt(t_envir *envir)
 			exit(0);
 		}
 		line = ft_dollar(envir, line);
+		line = ft_add_spacesep(line);
 		envir->start = ft_tokenize(line);
 		free(line);
 		in_loop = 1;

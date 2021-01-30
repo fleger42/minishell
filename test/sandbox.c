@@ -1,83 +1,59 @@
+
 #include <sys/types.h>
-#include <sys/wait.h>
+#include <sys/stat.h>
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
 
-void    ft_pipe(char **cmd1, char **cmd2)
+int
+main(int argc, char *argv[])
 {
-    int fd[2];
-    int f_pid;
+    struct stat sb;
 
-    execvp(cmd1[0], cmd1);
-    if(pipe(fd) == -1)
-        strerror(errno);
-    if((f_pid = fork()) == -1)
-       strerror(errno);
-    if(f_pid == 0) //In child
-    {
-        close(fd[0]);
-        dup2(fd[1], 1);
-       
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <pathname>\n", argv[0]);
+        exit(EXIT_FAILURE);
     }
-    else //In parent
-    {
-        if((f_pid = fork()) == -1)
-            strerror(errno);
-        if(f_pid == 0) //In child
-        {
-            close(fd[1]);
-            dup2(fd[0], 0);
-            close(fd[0]);
-            execvp(cmd2[0], cmd2);
-        }
-        else
-        {
-            close(fd[1]);
-            close(fd[0]);
-            wait(NULL);
-            wait(NULL);
-        }
+
+    if (stat(argv[1], &sb) == -1) {
+        perror("stat");
+        exit(EXIT_SUCCESS);
     }
-    
+
+    printf("Type de fichier :                ");
+
+    switch (sb.st_mode & S_IFMT) {
+    case S_IFBLK:  printf("périphérique de bloc\n");      break;
+    case S_IFCHR:  printf("périphérique de caractère\n"); break;
+    case S_IFDIR:  printf("répertoire\n");                break;
+    case S_IFIFO:  printf("FIFO/tube\n");                 break;
+    case S_IFLNK:  printf("lien symbolique\n");           break;
+    case S_IFREG:  printf("fichier ordinaire\n");         break;
+    case S_IFSOCK: printf("socket\n");                    break;
+    default:       printf("inconnu ?\n");                 break;
+    }
+
+    printf("Numéro d'inœud :                   %ld\n", (long) sb.st_ino);
+
+    printf("Mode :                             %lo (octal)\n",
+            (unsigned long) sb.st_mode);
+
+    printf("Nombre de liens :                  %ld\n", (long) sb.st_nlink);
+    printf("Propriétaires :                    UID=%ld   GID=%ld\n",
+            (long) sb.st_uid, (long) sb.st_gid);
+
+    printf("Taille de bloc d’E/S :             %ld octets\n",
+            (long) sb.st_blksize);
+    printf("Taille du fichier :                %lld octets\n",
+            (long long) sb.st_size);
+    printf("Blocs alloués :                    %lld\n",
+            (long long) sb.st_blocks);
+
+    printf("Dernier changement d’état :        %s", ctime(&sb.st_ctime));
+    printf("Dernier accès au fichier :         %s", ctime(&sb.st_atime));
+    printf("Dernière modification du fichier:  %s", ctime(&sb.st_mtime));
+
+    exit(EXIT_SUCCESS);
 }
 
-char	*ft_redirection_left(char *line, char *replace)
-{
-	char	**stock;
-	int		i;
-	int		j;
-	int		count;
-	char *final;
-
-	i = -1;
-	while(line[++i])
-		if(line[i] == '<')
-			count++;
-	stock = malloc(sizeof(char*) * count);
-	i = -1;
-	final = malloc(sizeof(char) *strlen(line));
-	while(line[++i])
-	{
-		if(line[i] != '<')
-			final[j++] = line[i];
-	}
-}
-
-int main(int argc, char *argv[])
-{
-    int i;
-    char    *cmd1[] = {"echo", "abcde", NULL};
-    char    *cmd2[] = {"rev", NULL};
-    i = 0;
-    /*char *list_cmd[5][4] = {{"echo", "abcdefg", NULL}, {"tr", "a", "1", NULL}, {"tr", "b", "2", NULL}, {"tr", "c", "3", NULL}, {"tr", "a", "1", NULL}};
-    while(i < 5)
-    {
-        printf("TOTEM\n"); 
-        ft_pipe(list_cmd[i], list_cmd[i + 1]);
-        i++;
-    }*/
-    ft_pipe(cmd1, cmd2);
-}  
+ 

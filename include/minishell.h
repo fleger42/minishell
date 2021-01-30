@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/29 14:48:16 by user42            #+#    #+#             */
-/*   Updated: 2021/01/27 17:34:04 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/30 15:23:56 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 # include "get_next_line.h"
 # include <dirent.h>
 # include <signal.h>
+# include <sys/types.h>
+# include <sys/stat.h>
 # include  "../libft/libft.h"
 #define BLACK    "\033[0;30m"
 #define RED      "\033[0;31m"
@@ -84,6 +86,7 @@ typedef struct	s_sig
 
 int		ctrl_c_called;
 int 	in_loop;
+int		in_child;
 int		ft_set_pwd(char **envp, char *oldpwd);
 int		ft_set_oldpwd(char **envp, char *oldpwd);
 void	ft_free_token(t_token *token);

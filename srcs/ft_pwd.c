@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/09 04:10:15 by user42            #+#    #+#             */
-/*   Updated: 2020/10/04 15:25:30 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/30 13:23:54 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,13 @@ int ft_pwd(char **av, t_envir *envir)
 	{
 		ft_putstr("Invalid arg or option for pwd");
 		ft_putchar('\n');
-		return (0);
+		return (1);
 	}
-	ft_putstr(getcwd(pwd, 10000));
+	char *final_pwd = getcwd(pwd, 10000);
+	if(final_pwd == NULL)
+		final_pwd = ft_get(envir->envp, "PWD");
+	ft_putstr_fd(final_pwd, 1);
 	ft_putchar('\n');
 	(void)envir;
-	return (1);
+	return (0);
 }

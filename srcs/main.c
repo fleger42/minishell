@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/30 16:00:37 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/30 17:02:46 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,7 +392,7 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 			i++;
 		}
 		free(cmd);
-		exit(0);
+		exit(envir->exit_code);
 	}
 	if(ft_isbuiltin(cmd[0]))
 		ft_exec_builtin(envir, cmd);
@@ -697,7 +697,7 @@ void	ft_prompt(t_envir *envir)
 		{
 			free(line);
 			ft_free_t_envir(envir);
-			exit(0);
+			exit(envir->exit_code);
 		}
 		line = ft_dollar(envir, line);
 		line = ft_add_spacesep(line);

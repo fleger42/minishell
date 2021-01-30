@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 19:39:52 by user42            #+#    #+#             */
-/*   Updated: 2021/01/30 15:51:27 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/30 17:08:18 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ void	ft_exec_nonbuiltin(t_envir *envir, char **cmd)
 		}
 	}
 	else if(pid == -1)
-		ft_putstr(RED"Error, pid = -1\n");
+		ft_putstr_fd(RED"Error, pid = -1\n", 2);
 	else
 		waitpid(pid, &envir->exit_code, 0);
 	if(WIFEXITED(pid))

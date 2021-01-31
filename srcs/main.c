@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/30 17:02:46 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/31 10:26:29 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,13 +174,20 @@ char	*ft_dollar(t_envir *envir, char *str)
 	char	*temp2;
 	int		j;
 	int		length;
+	int quote_open;
+
+	quote_open = 0;
 	i = 0;
 	temp2 = NULL;
 	temp = NULL;
 	start = NULL;
 	while(str[i])
 	{
-		if(str[i] == '$' && str[i + 1] != '\0' && str[i + 1] != ' ')
+		if((str[i] == '\'' && (str == 0 || str[i - 1] != '\\')) && quote_open == 0)
+			quote_open = 1;
+		else if((str[i] == '\'' && (str == 0 || str[i - 1] != '\\')) && quote_open == 1)
+			quote_open = 0;
+		if(quote_open == 0 && (str[i] == '$' && str[i + 1] != '\0' && str[i + 1] != ' ' && (i == 0 || str[i - 1] != '\\')))
 		{
 			start = malloc(sizeof(char) * (i + 1));
 			j = -1;
@@ -629,12 +636,18 @@ char	*ft_malloc_new_line(char *line)
 	int i;
 	int count;
 	char *new_line;
+	int quote_open;
 
+	quote_open = 0;
 	i = 0;
 	count = 0;
 	while(line[i])
 	{
-		if((i > 0 && ft_issep(line[i]) && line[i - 1] != ' ') || (i > 0 && ft_issep(line[i - 1]) && line[i] != ' '))
+		if(((line[i] == '\'' || line[i] == '\"') && (line == 0 || line[i - 1] != '\\')) && quote_open == 0)
+			quote_open = 1;
+		else if(((line[i] == '\'' || line[i] == '\"')  && (line == 0 || line[i - 1] != '\\')) && quote_open == 1)
+			quote_open = 0;
+		if(quote_open == 0 && ((i > 0 && ft_issep(line[i]) && line[i - 1] != ' ') || (i > 0 && ft_issep(line[i - 1]) && line[i] != ' ')))
 		{
 			count++;
 		}
@@ -650,14 +663,22 @@ char	*ft_add_spacesep(char *line)
 	int i;
 	int j;
 	char *new_line;
+	int quote_open;
+
+	quote_open = 0;
 	i = 0;
 	j = 0;
 	new_line = ft_malloc_new_line(line);
 	while(line[i])
 	{
-		if((i > 0 && ft_issep(line[i]) && line[i - 1] != ' ') || (i > 0 && ft_issep(line[i - 1]) && line[i] != ' '))
+		if(((line[i] == '\'' || line[i] == '\"') && (line == 0 || line[i - 1] != '\\')) && quote_open == 0)
+			quote_open = 1;
+		else if(((line[i] == '\'' || line[i] == '\"')  && (line == 0 || line[i - 1] != '\\')) && quote_open == 1)
+			quote_open = 0;
+		if(quote_open == 0 && ((i > 0 && ft_issep(line[i]) && line[i - 1] != ' ') || (i > 0 && ft_issep(line[i - 1]) && line[i] != ' ')))
 		{
-			new_line[j++] = ' ';
+			if(!(line[i] == '<' && line[i - 1] == '<'))
+				new_line[j++] = ' ';
 		}
 		new_line[j++] = line[i];
 		i++;
@@ -667,10 +688,32 @@ char	*ft_add_spacesep(char *line)
 	return (new_line);
 }
 
+int		ft_check_quote(char *line)
+{
+	int i;
+	int quote_open;
+
+	quote_open = 0;
+	i = 0;
+	while(line[i])
+	{
+		if((line[i] == '\'' && (line == 0 || line[i - 1] != '\\')) && quote_open == 0)
+			quote_open = 1;
+		else if((line[i] == '\'' && (line == 0 || line[i - 1] != '\\')) && quote_open == 1)
+			quote_open = 0;
+		if((line[i] == '\"' && (line == 0 || line[i - 1] != '\\')) && quote_open == 0)
+			quote_open = 2;
+		else if((line[i] == '\"'  && (line == 0 || line[i - 1] != '\\')) && quote_open == 2)
+			quote_open = 0;
+		i++;
+	}
+	return (quote_open);
+}
+
 void	ft_prompt(t_envir *envir)
 {
 	char    *line;
-
+	int ret;
 	line = NULL;
 	ft_signal_init();
 	while(1)
@@ -699,8 +742,17 @@ void	ft_prompt(t_envir *envir)
 			ft_free_t_envir(envir);
 			exit(envir->exit_code);
 		}
-		line = ft_dollar(envir, line);
+		if((ret = ft_check_quote(line)))
+		{
+			free(line);
+			line = ft_strdup("\0");
+			if(ret == 1)
+				ft_putstr_fd("Syntax error, simple quote not closed\n", 2);
+			if(ret == 2)
+				ft_putstr_fd("Syntax error, double quote not closed\n", 2);
+		}
 		line = ft_add_spacesep(line);
+		line = ft_dollar(envir, line);
 		envir->start = ft_tokenize(line);
 		free(line);
 		in_loop = 1;

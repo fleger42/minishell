@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 19:39:52 by user42            #+#    #+#             */
-/*   Updated: 2021/01/30 17:08:18 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/31 09:38:58 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,8 @@ void	ft_exec_nonbuiltin(t_envir *envir, char **cmd)
 		if(execve(path, cmd, envir->envp) < 0)
 		{
 			free(path);
+			ft_putstr_fd(cmd[0], 2);
+			ft_putstr_fd(" : ", 2);
 			ft_putstr_fd(strerror(errno), 2);
 			ft_putstr_fd("\n", 2);
 			if(errno == EAGAIN)

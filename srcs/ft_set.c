@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 19:00:48 by user42            #+#    #+#             */
-/*   Updated: 2021/01/26 09:16:47 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/31 17:53:20 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@ int		ft_set_shlvl(char **envp, int shlvl)
 	int i;
 	char	*inter;
 	i = 0;
-	while(envp[i] != NULL)
+	while (envp[i] != NULL)
 	{
-		if(ft_strncmp(envp[i], "SHLVL=", 6) == 0)
+		if (ft_strncmp(envp[i], "SHLVL=", 6) == 0)
 		{
 			free(envp[i]);
 			inter = ft_itoa(shlvl);
@@ -36,9 +36,9 @@ int		ft_set_oldpwd(char **envp, char *oldpwd)
 	int i;
 	i = 0;
 
-	while(envp[i] != NULL)
+	while (envp[i] != NULL)
 	{
-		if(ft_strncmp(envp[i], "OLDPWD=", 7) == 0)
+		if (ft_strncmp(envp[i], "OLDPWD=", 7) == 0)
 		{
 			free(envp[i]);
 			envp[i] = ft_catpy("OLDPWD=", oldpwd);
@@ -53,9 +53,9 @@ int		ft_set_pwd(char **envp, char *oldpwd)
 	int i;
 	i = 0;
 
-	while(envp[i] != NULL)
+	while (envp[i] != NULL)
 	{
-		if(ft_strncmp(envp[i], "PWD=", 4) == 0)
+		if (ft_strncmp(envp[i], "PWD=", 4) == 0)
 		{
 			free(envp[i]);
 			envp[i] = ft_catpy("PWD=", oldpwd);
@@ -70,7 +70,7 @@ void	ft_free_env(char **envp)
 	int i;
 
 	i = -1;
-	while(envp[++i] != NULL)
+	while (envp[++i] != NULL)
 		free(envp[i]);
 	free(envp);
 }
@@ -81,9 +81,9 @@ void	ft_set_env(char **envp, char *prog_name)
 	char *pwd;
 	char *str;
 	i = 0;
-	while(envp[i] != NULL)
+	while (envp[i] != NULL)
 	{
-		if(envp[i][0] == '_' && envp[i][1] == '=')
+		if (envp[i][0] == '_' && envp[i][1] == '=')
         {
 			pwd = ft_catpy(ft_get(envp, "PWD"), "/");
 			str = ft_catpy(pwd, prog_name);

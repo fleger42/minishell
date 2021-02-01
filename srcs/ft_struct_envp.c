@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/21 04:37:22 by user42            #+#    #+#             */
-/*   Updated: 2021/01/27 17:33:30 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/31 17:54:10 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@ char	**ft_strdup_doubletab(char **envp)
 	char **cpy;
 
 	i = 0;
-	while(envp[i] != NULL)
+	while (envp[i] != NULL)
 		i++;
 	cpy = malloc(sizeof(char**) * (i + 1));
 	i = 0;
-	while(envp[i] != NULL)
+	while (envp[i] != NULL)
 	{
 		cpy[i] = ft_strdup(envp[i]);
 		i++;

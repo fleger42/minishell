@@ -14,11 +14,11 @@
 
 void	ft_signal_handler(int signal)
 {
-	if(signal == SIGINT)
+	if (signal == SIGINT)
 	{
-		if(in_child == 0)
+		if (in_child == 0)
 		{
-			if(in_loop == 1)
+			if (in_loop == 1)
 			{
 				write(STDERR_FILENO, "\b\b  ", 4);
 				write(STDERR_FILENO, "\n", 1);
@@ -41,7 +41,7 @@ void	ft_signal_register(int *signaltab)
 	int i;
 
 	i = 0;
-	while(signaltab[i])
+	while (signaltab[i])
 	{
 		signal(signaltab[i], ft_signal_handler);
 		i++;

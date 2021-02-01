@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/30 18:34:43 by user42            #+#    #+#             */
-/*   Updated: 2021/01/20 01:47:37 by user42           ###   ########.fr       */
+/*   Updated: 2021/01/31 17:54:28 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,13 @@ int	ft_verif_unset(char *str1, char *str2)
 	int i;
 
 	i = 0;
-	while(str1[i] != '=')
+	while (str1[i] != '=')
 	{
-		if(str1[i] != str2[i])
+		if (str1[i] != str2[i])
 			return (0);
 		i++;
 	}
-	if(str2[i] == '\0')
+	if (str2[i] == '\0')
 		return (1);
 	return (0);
 }
@@ -37,13 +37,13 @@ void	ft_remove_line(t_envir *envir, char *str)
 
 	j = 0;
     i = 0;
-    while(envir->envp[i])
+    while (envir->envp[i])
 		i++;
 	new_envp = malloc(sizeof(char*) * (i));
 	i = 0;
-	while(envir->envp[i])
+	while (envir->envp[i])
     {
-        if(!ft_verif_unset(envir->envp[i], str))
+        if (!ft_verif_unset(envir->envp[i], str))
 		{
             new_envp[j] = ft_strdup(envir->envp[i]);
 			j++;
@@ -60,9 +60,9 @@ int ft_cmp_envir(t_envir *envir, char *str)
     int i;
 
     i = 0;
-    while(envir->envp[i])
+    while (envir->envp[i])
     {
-        if(ft_verif_unset(envir->envp[i], str))
+        if (ft_verif_unset(envir->envp[i], str))
             return (1);
         i++;
     }
@@ -74,9 +74,9 @@ int ft_unset(char **av, t_envir *envir)
     int i;
 
     i = 0;
-	while(av[i])
+	while (av[i])
     {
-        if(ft_cmp_envir(envir, av[i]))
+        if (ft_cmp_envir(envir, av[i]))
 		{
             ft_remove_line(envir, av[i]);
 		}

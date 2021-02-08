@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/09 06:38:27 by user42            #+#    #+#             */
-/*   Updated: 2021/01/31 19:19:43 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/03 19:48:03 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void	ft_putstr_without_charset(char *str, char *charset)
 		return ;
 	while (str[i])
 	{
-		if (!ft_is_charset(str[i], charset))
+		if (!ft_is_charset(str[i], charset) || (i > 0 && str[i] == '\"' && str[i - 1] == '\\') || (i > 0 && str[i] == '\'' && str[i - 1] == '\\'))
 			ft_putchar(str[i]);
 		i++;
 	}
@@ -85,7 +85,7 @@ int 	ft_echo(char **av, t_envir *envir)
 		i = 1;
 	while (av[i] != NULL)
 	{
-		ft_putstr_without_charset(av[i], "\"\\");
+		ft_putstr_without_charset(av[i], "\\\"\'");
 		if (av[i + 1] != NULL)
 			ft_putchar(' ');
 		i++;

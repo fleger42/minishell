@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/01/31 17:55:00 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/08 05:24:14 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,7 +181,7 @@ char	*ft_dollar(t_envir *envir, char *str)
 	temp2 = NULL;
 	temp = NULL;
 	start = NULL;
-	while (str[i])
+	while (str[i] && str[i] != ';')
 	{
 		if ((str[i] == '\'' && (str == 0 || str[i - 1] != '\\')) && quote_open == 0)
 			quote_open = 1;
@@ -281,9 +281,15 @@ char		*ft_malloc_string_token(char *line, int i)
 	{
 		//printf("On char [%c]\n", line[i]);
 		if ((line[i] == '\'' || line[i] == '\"') && allow == 0)
+		{
+			count++;
 			allow = 1;
+		}
 		else if ((line[i] == '\'' || line[i] == '\"') && allow == 1)
+		{
+			count++;
 			allow = 0;
+		}
 		else
 			count++;
 		i++;
@@ -307,10 +313,16 @@ char		*ft_get_string_token(char *line, int *i)
 	while (line[*i] && (line[*i] != ' ' || allow == 1))
 	{
 		//printf("On char [%c]\n", line[*i]);
-		if ((line[*i] == '\'' || line[*i] == '\"') && allow == 0)
+		if (((*i > 0 && line[*i - 1] != '\\') && (line[*i] == '\'' || line[*i] == '\"')) && allow == 0)
+		{
+			string[j++] = line[*i];
 			allow = 1;
-		else if ((line[*i] == '\'' || line[*i] == '\"') && allow == 1)
+		}
+		else if (((*i > 0 && line[*i - 1] != '\\') && (line[*i] == '\'' || line[*i] == '\"')) && allow == 1)
+		{
+			string[j++] = line[*i];
 			allow = 0;
+		}
 		else
 			string[j++] = line[*i];
 		(*i)++;
@@ -353,12 +365,15 @@ char		**ft_lst_to_path(t_token *start)
 	char **cmd;
 
 	count = 0;
+	if(start == NULL)
+		return (NULL);
 	token = start;
 	while (token && (token->type == ARG || token->type == CMD))
 	{
 		//printf("cmd to args = [%s]\n", token->string);
+		if(token->string && token->string[0])	
+			count++;
 		token = token->next;
-		count++;
 	}
 	//printf("counted [%d] dimension\n", count);
 	cmd = malloc(sizeof(char*) * (count + 1));
@@ -367,7 +382,8 @@ char		**ft_lst_to_path(t_token *start)
 	while (token && (token->type == ARG || token->type == CMD))
 	{
 		//printf("cmd to args = [%s]\n", token->string);
-		cmd[count++] = ft_strdup(token->string);
+		if(token->string && token->string[0])
+			cmd[count++] = ft_strdup(token->string);
 		token = token->next;
 	}
 	cmd[count] = NULL;
@@ -389,6 +405,8 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 
 	i = 0;
 	cmd = ft_lst_to_path(token);
+	if(cmd == NULL)
+		return ;
 	if (ft_strcmp(cmd[0], "exit") == 0)
 	{
 		ft_free_token(envir->start);
@@ -446,7 +464,7 @@ t_token		*ft_token_to_cmd(t_token *token)
 	while (token && token->type != CMD)
 	{
 		token = token->next;
-		if (token && token->type == CMD && token->prev->type != NEXT)
+		if (token && token->type == CMD && token->prev->type < NEXT)
 			token = token->next;
 	}
 	return(token);
@@ -469,19 +487,71 @@ void		ft_reset(t_envir *envir)
 	dup2(envir->standardin, 0);
 	dup2(envir->standardout, 1);
 }
+			
+char	*ft_str_remove(char *str)
+{
+	char *new;
+	int i;
+	int count;
+	int j;
+
+	count = 0;
+	i = 0;
+	if(ft_strcmp(str, "\"\"") == 0 || ft_strcmp(str, "\'\'") == 0)
+	{
+		free(str);
+		return (ft_strdup("\'\'"));
+	}
+	while(str[i])
+	{
+		if((str[i] != '\'' && str[i] != '\"') || (i > 0 && str[i - 1] == '\\'))
+			count++;
+		i++;
+	}
+	new = malloc(sizeof(char) * (count + 1));
+	j = 0;
+	i = 0;
+	while(str[i])
+	{
+		if((str[i] != '\'' && str[i] != '\"') || (i > 0 && str[i - 1] == '\\'))
+			new[j++] = str[i];
+		i++;
+	}
+	free(str);
+	new[j] = '\0';
+	return (new);
+}
+
+void	ft_dollar_until_next(t_envir *envir, t_token *first)
+{
+	t_token *token;
+
+	token = first;
+	while(token && token->type != NEXT)
+	{
+		token->string = ft_dollar(envir, token->string);
+		token->string = ft_str_remove(token->string);
+		token = token->next;
+	}
+}
+
 void		ft_exec_loop(t_envir *envir, t_token *token)
 {
 	int pid;
 	int temp;
 
-	token = ft_token_to_cmd(token);
+	token = ft_token_to_cmd(envir->start);
+	if((envir->start->type == LEFT || envir->start->type == RIGHT || envir->start->type == DOUBLERIGHT))
+		token = envir->start->next;
 	temp = 0;
 	pid = 0;
 	while (token != NULL && ctrl_c_called == 0)
 	{
 		in_child = 0;
 		envir->pipe_dad = 0;
-		ft_exec(envir, token);
+		ft_dollar_until_next(envir, token);
+		if(token->string && token->string[0])
+			ft_exec(envir, token);
 		ft_reset(envir);
 		waitpid(-1, &pid, 0);
 		if (WIFEXITED(pid))
@@ -556,7 +626,7 @@ int			ft_get_type_token(t_token *token)
 		return (DOUBLERIGHT);
 	if (ft_strcmp(token->string, ">") == 0)
 		return (RIGHT);
-	if (token->prev == NULL || token->prev->type == RIGHT || token->prev->type == PIPE || token->prev->type == NEXT)
+	if (token->prev == NULL || (token->prev->type != ARG && token->prev->type != CMD))
 		return (CMD);
 	else
 		return (ARG);
@@ -614,6 +684,7 @@ t_token		*ft_tokenize(char *line)
 void	ft_free_token(t_token *token)
 {
 	t_token *temp;
+
 	while (token)
 	{
 		temp = token->next;
@@ -677,7 +748,7 @@ char	*ft_add_spacesep(char *line)
 			quote_open = 0;
 		if (quote_open == 0 && ((i > 0 && ft_issep(line[i]) && line[i - 1] != ' ') || (i > 0 && ft_issep(line[i - 1]) && line[i] != ' ')))
 		{
-			if (!(line[i] == '<' && line[i - 1] == '<'))
+			if (!(line[i] == '>' && line[i - 1] == '>'))
 				new_line[j++] = ' ';
 		}
 		new_line[j++] = line[i];
@@ -695,6 +766,7 @@ int		ft_check_quote(char *line)
 
 	quote_open = 0;
 	i = 0;
+	
 	while (line[i])
 	{
 		if ((line[i] == '\'' && (line == 0 || line[i - 1] != '\\')) && quote_open == 0)
@@ -710,10 +782,151 @@ int		ft_check_quote(char *line)
 	return (quote_open);
 }
 
+t_token		*ft_next_end(t_token *token)
+{
+	t_token *actual;
+
+	actual = token;
+	while(actual)
+	{
+		if(actual->type == NEXT)
+			return (actual);
+	}
+	return (actual);
+}
+
+void		ft_insert_after(t_token *token, t_token *new)
+{
+	new->prev = token;
+	if(token == NULL)
+		return ;
+	if(token->next == NULL)
+		new->next = NULL;
+	else
+	{
+		new->next = token->next;
+		token->next->prev = new;
+	}
+	token->next = new;
+}
+
+void		ft_insert_before(t_envir *envir, t_token *token, t_token *new)
+{
+	new->next = token;
+	if(token == NULL)
+		return ;
+	if(token->prev == NULL)
+	{
+		new->prev = NULL;
+		envir->start = new;
+	}
+	else
+	{
+		new->prev = token->prev;
+		token->prev->next = new;
+	}
+	token->prev = new;
+}
+
+void		ft_remove_token(t_envir *envir, t_token *to_supp)
+{
+	if(to_supp == NULL)
+		return ;
+	if(to_supp->prev == NULL)
+		envir->start = to_supp->next;
+	else
+		to_supp->prev->next = to_supp->next;
+	if(to_supp->next != NULL)
+		to_supp->next->prev = to_supp->prev;
+	free(to_supp->string);
+	free(to_supp);
+	
+}
+
+t_token		*ft_dup_token(t_token *token)
+{
+	t_token *new = malloc(sizeof(t_token));
+
+	new->string = ft_strdup(token->string);
+	new->type = token->type;
+	return (new);
+}
+
+void		ft_refresh_type(t_token *start)
+{
+	t_token *token;
+
+	token = start;
+	while(token)
+	{
+		//printf("Type on %s\n", token->string);
+		token->type = ft_get_type_token(token);
+		token = token->next;
+	}
+}
+
+int			ft_get_valid(t_token *token)
+{
+	t_token *prev;
+
+	if(token == NULL || token->type == CMD || token->type == ARG)
+	{
+		prev = ft_previous_sep(token);
+		if(prev == NULL || prev->type == PIPE || prev->type == NEXT)
+			return (0);
+		return (1);
+	}
+	return (1);
+}
+
+void		ft_replace_nullstart(t_envir *envir, t_token *token)
+{
+	token->prev = NULL;
+	token->next = envir->start;
+	envir->start->prev = token;
+	envir->start = token;
+}
+
+void		ft_verif_token(t_envir *envir) //"""""< lol echo test ; cat lol""""""" =>> """""echo test < lol; cat lol"""""""
+{
+	//t_token *end;
+	t_token *token;
+	t_token *dup;
+	t_token *prev;
+	t_token *temp;
+
+	token = envir->start;
+	while(token)
+	{
+		
+		prev = ft_previous_sep(token);
+		if(token->type == ARG && (prev && (prev->type == RIGHT || prev->type == LEFT || prev->type == DOUBLERIGHT)))
+		{
+			
+			dup = ft_dup_token(token);
+			temp = token->prev;
+			ft_remove_token(envir, token);
+			token = temp;
+			while(ft_get_valid(token))
+				token = token->prev;
+			if(token)
+				ft_insert_after(token, dup);
+			else
+				ft_replace_nullstart(envir, dup);
+			token = envir->start;
+		}
+		else
+			token = token->next;
+	}
+	ft_refresh_type(envir->start);
+}
+
 void	ft_prompt(t_envir *envir)
 {
 	char    *line;
 	int ret;
+	int exit_value;
+
 	line = NULL;
 	ft_signal_init();
 	while (1)
@@ -739,8 +952,9 @@ void	ft_prompt(t_envir *envir)
 		if (line == NULL)
 		{
 			free(line);
+			exit_value = envir->exit_code;
 			ft_free_t_envir(envir);
-			exit(envir->exit_code);
+			exit(exit_value);
 		}
 		if ((ret = ft_check_quote(line)))
 		{
@@ -752,11 +966,12 @@ void	ft_prompt(t_envir *envir)
 				ft_putstr_fd("Syntax error, double quote not closed\n", 2);
 		}
 		line = ft_add_spacesep(line);
-		line = ft_dollar(envir, line);
 		envir->start = ft_tokenize(line);
+		ft_verif_token(envir);
 		free(line);
 		in_loop = 1;
-		ft_exec_loop(envir, envir->start);
+		if(envir->start)
+			ft_exec_loop(envir, envir->start);
 		in_loop = 0;
 		ft_free_token(envir->start);
 	}

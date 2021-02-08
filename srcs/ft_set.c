@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 19:00:48 by user42            #+#    #+#             */
-/*   Updated: 2021/01/31 17:53:20 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/05 04:29:16 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ void	ft_set_env(char **envp, char *prog_name)
 	int i;
 	char *pwd;
 	char *str;
+
 	i = 0;
 	while (envp[i] != NULL)
 	{

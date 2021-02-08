@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/29 14:48:16 by user42            #+#    #+#             */
-/*   Updated: 2021/01/31 14:11:57 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/05 21:57:31 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,14 +37,13 @@
 #define NORMAL	"\033[00m"
 
 
-#define EMPTY 0
 #define RIGHT 1
 #define DOUBLERIGHT 2
 #define LEFT 3
 #define PIPE 4
-#define NEXT 5
+#define ARG 5
 #define CMD 6
-#define ARG 7
+#define NEXT 7
 
 typedef struct	s_token
 {

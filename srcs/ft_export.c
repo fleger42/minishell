@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/21 04:26:49 by user42            #+#    #+#             */
-/*   Updated: 2021/01/31 19:29:18 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/05 05:31:38 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,52 +51,49 @@ void	ft_sort_doubletab(t_envir *envir)
 	}
 }
 
-int 	ft_has_carac(char *str, char c)
+char	*ft_remove_multiplespace(char *str)
 {
-	int	i;
+	char *new;
+	int i;
+	int j;
+	int count;
 
+	count = 0;
+	j = 0;
 	i = 0;
-	while (str[i])
+	if(str == NULL)
+		return (NULL);
+	while(str[i])
 	{
-		if (str[i] == c)
-			return (1);
-		i++;
+		if(str[i] == ' ')
+		{
+			count++;
+			while(str[i] == ' ')
+				i++;
+		}
+		else
+		{
+			i++;
+			count++;
+		}
 	}
-	return (0);
-}
-
-char	*ft_create_exportable(char *str)
-{
-	int		i;
-	char	*cpy;
-	int		j;
-	
+	new = malloc(sizeof(char) * (count + 1));
+	j = 0;
 	i = 0;
-	j = -1;
-	while (str[i] && str[i] != '=')
-		i++;
-	if (str[i] == '=' && str[i + 1] == '\0')
+	while(str[i])
 	{
-		cpy = malloc(sizeof(char*) * (i + 3));
-		while (++j<=i)
-			cpy[j] = str[j];
-		cpy[i + 1] = 39;
-		cpy[i + 2] = 39;
-		cpy[i + 3] = '\0';
+		if(str[i] == ' ')
+		{
+			new[j++] = str[i];
+			while(str[i] == ' ')
+				i++;
+		}
+		else
+			new[j++] = str[i++];
 	}
-	else if (str[i] == '\0')
-	{
-		cpy = malloc(sizeof(char*) * (i + 4));
-		while (++j<=i)
-			cpy[j] = str[j];
-		cpy[i] = '=';
-		cpy[i + 1] = 39;
-		cpy[i + 2] = 39;
-		cpy[i + 3] = '\0';
-	}
-	else
-		cpy = ft_strdup(str);
-	return(cpy);
+	new[j] = '\0';
+	free(str);
+	return (new);
 }
 
 void	ft_add_str_tab(t_envir *envir, char *str)
@@ -114,7 +111,7 @@ void	ft_add_str_tab(t_envir *envir, char *str)
 		cpy[i] = envir->envp[i];
 		i++;
 	}
-	cpy[i] = ft_create_exportable(str);
+	cpy[i] = ft_remove_multiplespace(ft_strdup(str));
 	cpy[i + 1] = NULL;
 	free(envir->envp);
 	envir->envp = cpy;
@@ -125,7 +122,7 @@ int	ft_cmp_equal(char *str1, char *str2)
 	int	i;
 
 	i = 0;
-	while (str1[i] != '=')
+	while (str1[i] && str1[i] != '=')
 	{
 		if (str1[i] != str2[i])
 			return (0);
@@ -160,7 +157,7 @@ void	ft_replace_line(t_envir *envir, char *str)
 		if (ft_cmp_equal(envir->envp[i], str))
 		{
 			free(envir->envp[i]);
-			envir->envp[i] = ft_create_exportable(str);
+			envir->envp[i] = ft_remove_multiplespace(ft_strdup(str));
 		}
 		i++;
 	}
@@ -217,25 +214,28 @@ int		ft_print_until_space(char *str)
 		ft_putchar(str[i]);
 		i++;
 	}
-	ft_putchar('=');
+	if(str[i] == '=')
+	{
+		ft_putchar('=');
+		ft_putchar('"');
+		ft_putstr(str + i + 1);
+		ft_putchar('"');
+	}
+	else
+		ft_putstr(str + i);
 	return (i);
 }
 void	ft_print_export(t_envir *envir)
 {
 	int	i;
-	int	ret;
 
-	ret = 0;
 	i = 0;
 	while (envir->envp[i] != NULL)
 	{
 		if (envir->envp[i][0] != '_')
 		{
 			ft_putstr("declare -x ");
-			ret = ft_print_until_space(envir->envp[i]);
-			ft_putchar('"');
-			ft_putstr(envir->envp[i] + ret + 1);
-			ft_putchar('"');
+			ft_print_until_space(envir->envp[i]);
 			ft_putchar('\n');
 		}
 		i++;
@@ -260,7 +260,7 @@ int ft_export(char **av, t_envir *envir)
 		{
 			if (ft_verif_dupe(envir, av[i]) == 1)
 			{
-				if (ft_has_carac(av[i], '='))
+				if (ft_strchr(av[i], '='))
 				{
 					ft_replace_line(envir, av[i]);
 				}

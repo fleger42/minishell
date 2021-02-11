@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 19:14:31 by user42            #+#    #+#             */
-/*   Updated: 2021/01/27 18:44:04 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/11 06:29:55 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ void	ft_error(char *str)
 {
 	write(2, str, ft_strlen(str));
 	ft_putchar('\n');
+	exit(1);
 }
 
 size_t			ft_strlcpy(char *dst, char const *src, size_t size)
@@ -189,6 +190,32 @@ char	*ft_catpy(char *first, char *second)
 	new[i] = '\0';
 	return (new);
 }
+
+long long int	ft_llatoi(const char *nptr)
+{
+	int				i;
+	unsigned long long int	result;
+	int				signe;
+
+	signe = 1;
+	i = 0;
+	result = 0;
+	while ((nptr[i] >= 8 && nptr[i] <= 13) || nptr[i] == ' ')
+		i++;
+	if (nptr[i] == '-' || nptr[i] == '+')
+	{
+		if (nptr[i] == '-')
+			signe = -1;
+		i++;
+	}
+	while (nptr[i] >= '0' && nptr[i] <= '9')
+	{
+		result = result * 10 + (nptr[i++] - 48);
+	}
+	result = result * signe;
+	return (result);
+}
+
 
 int			ft_atoi(const char *nptr)
 {

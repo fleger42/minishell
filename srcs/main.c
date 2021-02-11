@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/09 11:49:09 by user42            #+#    #+#             */
-/*   Updated: 2021/02/08 05:24:14 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/11 06:24:02 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -398,6 +398,59 @@ int			ft_isbuiltin(char *str)
 	return(0);
 }
 
+int		ft_is_onlynumber(char *str)
+{
+	int		i;
+
+	i = 0;
+	while(str[i])
+	{
+		if(!ft_isdigit(str[i]) && str[i] != '-')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+int		ft_exit_cmd(t_envir *envir, char **cmd)
+{
+	int		i;
+
+	i = 0;
+	while(cmd[i])
+		i++;
+	if(i == 1)
+		return (1);
+	else if(ft_is_onlynumber(cmd[1]) == 0)
+	{
+		ft_putstr_fd("minishell: exit: ", 2);
+		ft_putstr_fd(cmd[1], 2);
+		ft_putstr_fd(" : argument numérique nécessaire\n", 2);
+		envir->exit_code = 2;
+	}
+	else if(i > 2)
+	{ 
+		envir->exit_code = 1;
+		ft_putstr_fd("minishell: exit: trop d'arguments\n", 2);
+		return (0);
+	}
+	else if(ft_llatoi(cmd[1]) > 9223372036854775807 || (ft_llatoi(cmd[1]) < -9223372036854775807))
+	
+	{
+		ft_putstr_fd("minishell: exit: ", 2);
+		ft_putstr_fd(cmd[1], 2);
+		ft_putstr_fd(" : argument numérique nécessaire\n", 2);
+		envir->exit_code = 2;
+	}
+	else if(ft_llatoi(cmd[1]) < 0)
+	{
+		envir->exit_code = 256 + ft_llatoi(cmd[1]);
+	}
+	else
+		envir->exit_code = ft_llatoi(cmd[1]);
+	return (1);
+}
+
 void		ft_exec_cmd(t_envir *envir, t_token *token)
 {
 	char	**cmd;
@@ -409,6 +462,7 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 		return ;
 	if (ft_strcmp(cmd[0], "exit") == 0)
 	{
+		ft_exit_cmd(envir, cmd);
 		ft_free_token(envir->start);
 		ft_free_t_envir(envir);
 		while (cmd[i])
@@ -887,7 +941,57 @@ void		ft_replace_nullstart(t_envir *envir, t_token *token)
 	envir->start = token;
 }
 
-void		ft_verif_token(t_envir *envir) //"""""< lol echo test ; cat lol""""""" =>> """""echo test < lol; cat lol"""""""
+int			ft_istype(t_token *token, char *str)
+{
+	if(ft_strchr(str, 'R') && token->type == RIGHT)
+		return (1);
+	if(ft_strchr(str, 'D') && token->type == DOUBLERIGHT)
+		return (1);
+	if(ft_strchr(str, 'L') && token->type == LEFT)
+		return (1);
+	if(ft_strchr(str, 'P') && token->type == PIPE)
+		return (1);
+	if(ft_strchr(str, 'A') && token->type == ARG)
+		return (1);
+	if(ft_strchr(str, 'C') && token->type == CMD)
+		return (1);
+	if(ft_strchr(str, 'N') && token->type == NEXT)
+		return (1);
+	return (0);
+}
+int			ft_verif_syntax(t_envir *envir)
+
+{
+	t_token *token;
+
+	token = envir->start;
+	while(token)
+	{
+		if(ft_istype(token, "LDR") && (token->next == NULL || ft_istype(token->next, "LDRPN")))
+		{
+			envir->exit_code = 2;
+			ft_putstr_fd("minishell: erreur de syntaxe près du symbole inattendu « ", 2);
+			if(token->next)
+				ft_putstr_fd(token->next->string, 2);
+			else
+				ft_putstr_fd("newline", 2);
+			ft_putstr_fd(" »\n", 2);
+			return (1);
+		}
+		else if(ft_istype(token, "PN") && (token->next == NULL || ft_istype(token->next, "LDRPN") || token->prev == NULL))
+		{
+			envir->exit_code = 2;
+			ft_putstr_fd("minishell: erreur de syntaxe près du symbole inattendu « ", 2);
+			ft_putstr_fd(token->string, 2);
+			ft_putstr_fd(" »\n", 2);
+			return (1);
+		}
+		token = token->next;
+	}
+	return (0);
+}
+
+void		ft_move_token(t_envir *envir) //"""""< lol echo test ; cat lol""""""" =>> """""echo test < lol; cat lol"""""""
 {
 	//t_token *end;
 	t_token *token;
@@ -898,7 +1002,6 @@ void		ft_verif_token(t_envir *envir) //"""""< lol echo test ; cat lol""""""" =>>
 	token = envir->start;
 	while(token)
 	{
-		
 		prev = ft_previous_sep(token);
 		if(token->type == ARG && (prev && (prev->type == RIGHT || prev->type == LEFT || prev->type == DOUBLERIGHT)))
 		{
@@ -967,13 +1070,21 @@ void	ft_prompt(t_envir *envir)
 		}
 		line = ft_add_spacesep(line);
 		envir->start = ft_tokenize(line);
-		ft_verif_token(envir);
-		free(line);
-		in_loop = 1;
-		if(envir->start)
-			ft_exec_loop(envir, envir->start);
-		in_loop = 0;
-		ft_free_token(envir->start);
+		if(ft_verif_syntax(envir) == 0)
+		{	
+			ft_move_token(envir);
+			in_loop = 1;
+			if(envir->start)
+				ft_exec_loop(envir, envir->start);
+			in_loop = 0;
+			ft_free_token(envir->start);
+			free(line);
+		}
+		else
+		{
+			free(line);
+			ft_free_token(envir->start);
+		}
 	}
 }
 

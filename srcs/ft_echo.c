@@ -6,13 +6,13 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/09 06:38:27 by user42            #+#    #+#             */
-/*   Updated: 2021/02/03 19:48:03 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/11 07:59:39 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
 
-int 	ft_is_charset(char c, char *str)
+int		ft_is_charset(char c, char *str)
 {
 	int	i;
 
@@ -35,13 +35,14 @@ void	ft_putstr_without_charset(char *str, char *charset)
 		return ;
 	while (str[i])
 	{
-		if (!ft_is_charset(str[i], charset) || (i > 0 && str[i] == '\"' && str[i - 1] == '\\') || (i > 0 && str[i] == '\'' && str[i - 1] == '\\'))
+		if (!ft_is_charset(str[i], charset) || (i > 0 && str[i] == '\"' &&
+		str[i - 1] == '\\') || (i > 0 && str[i] == '\'' && str[i - 1] == '\\'))
 			ft_putchar(str[i]);
 		i++;
 	}
 }
 
-int 	ft_is_nstring(char *str)
+int		ft_is_nstring(char *str)
 {
 	int	j;
 
@@ -60,7 +61,20 @@ int 	ft_is_nstring(char *str)
 	return (0);
 }
 
-int 	ft_echo(char **av, t_envir *envir)
+void	ft_echoutput(char **av, int n_option, int i)
+{
+	while (av[i] != NULL)
+	{
+		ft_putstr_without_charset(av[i], "\\\"\'");
+		if (av[i + 1] != NULL)
+			ft_putchar(' ');
+		i++;
+	}
+	if (n_option == 0)
+		ft_putchar('\n');
+}
+
+int		ft_echo(char **av, t_envir *envir)
 {
 	int	i;
 	int	j;
@@ -83,15 +97,7 @@ int 	ft_echo(char **av, t_envir *envir)
 	}
 	if (n_option == 0)
 		i = 1;
-	while (av[i] != NULL)
-	{
-		ft_putstr_without_charset(av[i], "\\\"\'");
-		if (av[i + 1] != NULL)
-			ft_putchar(' ');
-		i++;
-	}
-	if (n_option == 0)
-		ft_putchar('\n');
+	ft_echoutput(av, n_option, i);
 	(void)envir;
 	return (0);
 }

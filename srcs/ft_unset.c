@@ -5,15 +5,14 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/09/30 18:34:43 by user42            #+#    #+#             */
-/*   Updated: 2021/01/31 17:54:28 by user42           ###   ########.fr       */
+/*   Created: 2021/02/12 15:18:00 by user42            #+#    #+#             */
+/*   Updated: 2021/02/19 00:17:19 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
 
-
-int	ft_verif_unset(char *str1, char *str2)
+int		ft_verif_unset(char *str1, char *str2)
 {
 	int i;
 
@@ -31,56 +30,56 @@ int	ft_verif_unset(char *str1, char *str2)
 
 void	ft_remove_line(t_envir *envir, char *str)
 {
-    int i;
-	int j;
-	char **new_envp;
+	int		i;
+	int		j;
+	char	**new_envp;
 
 	j = 0;
-    i = 0;
-    while (envir->envp[i])
+	i = 0;
+	while (envir->envp[i])
 		i++;
 	new_envp = malloc(sizeof(char*) * (i));
 	i = 0;
 	while (envir->envp[i])
-    {
-        if (!ft_verif_unset(envir->envp[i], str))
+	{
+		if (!ft_verif_unset(envir->envp[i], str))
 		{
-            new_envp[j] = ft_strdup(envir->envp[i]);
+			new_envp[j] = ft_strdup(envir->envp[i]);
 			j++;
 		}
-        i++;
-    }
+		i++;
+	}
 	new_envp[j] = NULL;
 	ft_free_env(envir->envp);
 	envir->envp = new_envp;
 }
 
-int ft_cmp_envir(t_envir *envir, char *str)
+int		ft_cmp_envir(t_envir *envir, char *str)
 {
-    int i;
+	int i;
 
-    i = 0;
-    while (envir->envp[i])
-    {
-        if (ft_verif_unset(envir->envp[i], str))
-            return (1);
-        i++;
-    }
-    return (0);
+	i = 0;
+	while (envir->envp[i])
+	{
+		if (ft_verif_unset(envir->envp[i], str))
+			return (1);
+		i++;
+	}
+	return (0);
 }
 
-int ft_unset(char **av, t_envir *envir)
+int		ft_unset(char **av, t_envir *envir)
 {
-    int i;
+	int i;
 
-    i = 0;
+	i = 0;
 	while (av[i])
-    {
-        if (ft_cmp_envir(envir, av[i]))
+	{
+		if (ft_cmp_envir(envir, av[i]))
 		{
-            ft_remove_line(envir, av[i]);
+			ft_remove_line(envir, av[i]);
 		}
-        i++;
-    }
-    return (0);
+		i++;
+	}
+	return (0);
 }

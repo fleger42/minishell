@@ -9,7 +9,9 @@ LIBFT = -L libft -lft
 HEADER = minishell.h
 
 SRCS = ft_cd.c ft_exec.c ft_pwd.c ft_struct_envp.c get_next_line.c ft_echo.c ft_export.c ft_set.c \
-		ft_unset.c get_next_line_utils.c ft_env.c ft_get.c ft_signal.c ft_utils.c main.c ft_builtin_utils.c
+		ft_unset.c get_next_line_utils.c ft_env.c ft_get.c ft_signal.c ft_utils.c main.c ft_builtin_utils.c \
+		ft_export_utils1.c ft_export_utils2.c ft_utils2.c ft_utils3.c ft_utils4.c ft_verif.c \
+		ft_dollar.c ft_token.c ft_redir.c ft_builtin.c ft_exit.c ft_line.c \
 
 
 SRC = $(addprefix srcs/, $(SRCS))

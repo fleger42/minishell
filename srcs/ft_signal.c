@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_signal.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/12/21 17:31:05 by marvin            #+#    #+#             */
-/*   Updated: 2020/12/21 17:31:05 by marvin           ###   ########.fr       */
+/*   Created: 2021/02/12 05:15:07 by user42            #+#    #+#             */
+/*   Updated: 2021/02/12 05:17:06 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,8 +48,12 @@ void	ft_signal_register(int *signaltab)
 	}
 }
 
-void    ft_signal_init()
+void	ft_signal_init(void)
 {
-    int signaltab[] = {SIGINT, SIGQUIT, 0};
-    ft_signal_register(signaltab);
+	int signaltab[3];
+
+	signaltab[0] = SIGINT;
+	signaltab[1] = SIGQUIT;
+	signaltab[2] = 0;
+	ft_signal_register(signaltab);
 }

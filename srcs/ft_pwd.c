@@ -6,15 +6,16 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/09 04:10:15 by user42            #+#    #+#             */
-/*   Updated: 2021/01/31 17:52:04 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/12 07:29:52 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
 
-int ft_pwd(char **av, t_envir *envir)
+int	ft_pwd(char **av, t_envir *envir)
 {
 	char pwd[10000];
+	char *final_pwd;
 
 	if (av[1] != NULL)
 	{
@@ -22,7 +23,7 @@ int ft_pwd(char **av, t_envir *envir)
 		ft_putchar('\n');
 		return (1);
 	}
-	char *final_pwd = getcwd(pwd, 10000);
+	final_pwd = getcwd(pwd, 10000);
 	if (final_pwd == NULL)
 		final_pwd = ft_get(envir->envp, "PWD");
 	ft_putstr_fd(final_pwd, 1);

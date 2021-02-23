@@ -6,12 +6,11 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/30 16:41:00 by user42            #+#    #+#             */
-/*   Updated: 2021/01/20 20:22:45 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/19 00:08:29 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/get_next_line.h"
-
 
 int		verif_chaine(char *str)
 {
@@ -44,7 +43,7 @@ char	*readline(char *str, int fd)
 		free(str);
 		str = temp;
 	}
-	if(ret == 0)
+	if (ret == 0)
 	{
 		free(str);
 		return (NULL);
@@ -56,7 +55,7 @@ char	*ft_realloc(char *str, int k)
 {
 	char	*temp;
 
-	if(str[k + 1] == '\0')
+	if (str[k + 1] == '\0')
 	{
 		temp = NULL;
 	}
@@ -68,20 +67,29 @@ char	*ft_realloc(char *str, int k)
 	return (temp);
 }
 
-int		get_next_line(int fd, char **line)
+int		ft_errorgnl(char **str, int fd, char **line)
 {
-	static char	*str = NULL;
-	int			k;
 	char		buff[BUFFER_SIZE];
 
-	k = 0;
 	if (fd < 0 || BUFFER_SIZE <= 0 || !line || read(fd, buff, 0) < 0)
 		return (-1);
-	if (!(str = readline(str, fd)))
+	if (!(*str = readline(*str, fd)))
 	{
 		*line = NULL;
 		return (-1);
 	}
+	(void)buff;
+	return (0);
+}
+
+int		get_next_line(int fd, char **line)
+{
+	static char	*str = NULL;
+	int			k;
+
+	k = 0;
+	if (ft_errorgnl(&str, fd, line) != 0)
+		return (-1);
 	while (str[k] != '\n' && str[k] != '\0')
 		k++;
 	if (!(*line = ft_substr(str, 0, k)))
@@ -95,7 +103,7 @@ int		get_next_line(int fd, char **line)
 	else if (str[k] == '\n')
 	{
 		str = ft_realloc(str, k);
-		if(str == NULL)
+		if (str == NULL)
 			return (0);
 		return (1);
 	}

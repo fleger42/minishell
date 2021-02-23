@@ -6,16 +6,16 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/21 04:37:22 by user42            #+#    #+#             */
-/*   Updated: 2021/02/11 06:48:10 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/12 07:23:45 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
 
-char	**ft_strdup_doubletab(char **envp)
+char		**ft_strdup_doubletab(char **envp)
 {
-	int i;
-	char **cpy;
+	int		i;
+	char	**cpy;
 
 	i = 0;
 	while (envp[i] != NULL)
@@ -31,10 +31,28 @@ char	**ft_strdup_doubletab(char **envp)
 	return (cpy);
 }
 
+char		**ft_createmini_env(void)
+{
+	char	**cpy;
+	char	buf[10000];
+
+	cpy = malloc(sizeof(char*) * 5);
+	cpy[0] = ft_catpy("PWD=", getcwd(buf, 10000));
+	cpy[1] = ft_strdup("SHLVL=1");
+	cpy[2] = ft_strdup("_=");
+	cpy[2] = ft_strdup("OLDPWD=");
+	cpy[4] = NULL;
+	return (cpy);
+}
+
 t_envir		ft_create_t_envir(char **envp, char **av)
 {
-	t_envir envir;
-	envir.envp = ft_strdup_doubletab(envp);
+	t_envir	envir;
+
+	if (envp[0] == NULL)
+		envir.envp = ft_createmini_env();
+	else
+		envir.envp = ft_strdup_doubletab(envp);
 	envir.shlv = ft_get_shlv(envp) + 1;
 	envir.args = NULL;
 	envir.prog_name = av[0];
@@ -56,14 +74,14 @@ t_envir		ft_create_t_envir(char **envp, char **av)
 
 t_envir		*ft_malloc_t_envir(char **envp, char **av)
 {
-	t_envir *envir;
+	t_envir	*envir;
 
 	envir = (t_envir*)malloc(sizeof(t_envir));
 	*envir = ft_create_t_envir(envp, av);
-	return (envir); 
+	return (envir);
 }
 
-void	ft_free_t_envir(t_envir *to_free)
+void		ft_free_t_envir(t_envir *to_free)
 {
 	ft_free_env(to_free->envp);
 	free(to_free);

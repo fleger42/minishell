@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/29 14:48:16 by user42            #+#    #+#             */
-/*   Updated: 2021/02/23 02:33:27 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/24 02:16:48 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,7 @@ typedef struct	s_sig
 	int				sigint;
 	int				sigexit;
 }				t_sig;
+void	ft_ctrld(t_envir *envir, char *line);
 int		ft_cdhome(char *pwd[4]);
 void		ft_exec_cmd(t_envir *envir, t_token *token);
 long long int	ft_llatoi(const char *nptr);

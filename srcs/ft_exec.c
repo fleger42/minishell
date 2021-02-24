@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 19:39:52 by user42            #+#    #+#             */
-/*   Updated: 2021/02/21 19:28:30 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/23 18:56:48 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,14 +110,15 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 	{
 		ft_exit_cmd(envir, cmd);
 		ft_free_token(envir->start);
-		ft_free_t_envir(envir);
 		while (cmd[i])
 		{
 			free(cmd[i]);
 			i++;
 		}
 		free(cmd);
-		exit(envir->exit_code);
+		i = envir->exit_code;
+		ft_free_t_envir(envir);
+		exit(i);
 	}
 	if (ft_isbuiltin(cmd[0]))
 		ft_exec_builtin(envir, cmd);

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/07/21 04:37:22 by user42            #+#    #+#             */
-/*   Updated: 2021/02/12 07:23:45 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/23 19:01:32 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,8 @@ t_envir		*ft_malloc_t_envir(char **envp, char **av)
 
 void		ft_free_t_envir(t_envir *to_free)
 {
+	close(to_free->standardin);
+	close(to_free->standardout);
 	ft_free_env(to_free->envp);
 	free(to_free);
 }

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/19 18:49:40 by user42            #+#    #+#             */
-/*   Updated: 2021/02/23 02:27:02 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/23 21:26:04 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,18 @@ int		ft_check_quote(char *line)
 	return (quote_open);
 }
 
+void	ft_syntax_ldr(t_envir *envir, t_token *token)
+{
+	envir->exit_code = 2;
+	ft_putstr_fd("minishell: erreur de ", 2);
+	ft_putstr_fd("syntaxe près du symbole inattendu « ", 2);
+	if (token->next)
+		ft_putstr_fd(token->next->string, 2);
+	else
+		ft_putstr_fd("newline", 2);
+	ft_putstr_fd(" »\n", 2);
+}
+
 int		ft_verif_syntax(t_envir *envir)
 {
 	t_token *token;
@@ -74,14 +86,7 @@ int		ft_verif_syntax(t_envir *envir)
 		if (ft_istype(token, "LDR") && (token->next == NULL ||
 		ft_istype(token->next, "LDRPN")))
 		{
-			envir->exit_code = 2;
-			ft_putstr_fd("minishell: erreur de ", 2);
-			ft_putstr_fd("syntaxe près du symbole inattendu « ", 2);
-			if (token->next)
-				ft_putstr_fd(token->next->string, 2);
-			else
-				ft_putstr_fd("newline", 2);
-			ft_putstr_fd(" »\n", 2);
+			ft_syntax_ldr(envir, token);
 			return (1);
 		}
 		else if (ft_istype(token, "PN") && (token->next == NULL ||

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/19 18:53:40 by user42            #+#    #+#             */
-/*   Updated: 2021/02/21 19:01:57 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/24 01:56:25 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,16 +39,13 @@ char		*ft_malloc_string_token(char *line, int i)
 	return ((ret = malloc(sizeof(char) * (count + 1))));
 }
 
-char		*ft_get_string_token(char *line, int *i)
+char		*ft_gst_add(char *line, char *string, int *i)
 {
-	char	*string;
 	int		allow;
 	int		j;
 
 	j = 0;
 	allow = 0;
-	*i += ft_char_tono_space(line + *i);
-	string = ft_malloc_string_token(line, *i);
 	while (line[*i] && (line[*i] != ' ' || allow == 1))
 	{
 		if (((*i > 0 && line[*i - 1] != '\\') &&
@@ -66,8 +63,22 @@ char		*ft_get_string_token(char *line, int *i)
 		else
 			string[j++] = line[*i];
 		(*i)++;
-	}
+	}	
 	string[j] = '\0';
+	return (string);
+}
+
+char		*ft_get_string_token(char *line, int *i)
+{
+	char	*string;
+	int		allow;
+	int		j;
+
+	j = 0;
+	allow = 0;
+	*i += ft_char_tono_space(line + *i);
+	string = ft_malloc_string_token(line, *i);
+	string = ft_gst_add(line, string, i);
 	return (string);
 }
 

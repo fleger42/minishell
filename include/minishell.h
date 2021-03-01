@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/29 14:48:16 by user42            #+#    #+#             */
-/*   Updated: 2021/02/24 02:16:48 by user42           ###   ########.fr       */
+/*   Updated: 2021/03/01 02:55:45 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,25 @@ typedef struct	s_sig
 	int				sigint;
 	int				sigexit;
 }				t_sig;
+t_token		*ft_previous_sep(t_token *token);
+int			ft_get_type_token(t_token *token);
+t_token		*ft_get_actual_token(char *line, int *i);
+t_token		*ft_tokenize(char *line);
+void		ft_free_token(t_token *token);
+t_token		*ft_next_end(t_token *token);
+void		ft_insert_after(t_token *token, t_token *new);
+void		ft_insert_before(t_envir *envir, t_token *token, t_token *new);
+void		ft_remove_token(t_envir *envir, t_token *to_supp);
+t_token		*ft_dup_token(t_token *token);
+void		ft_refresh_type(t_token *start);
+int			ft_get_valid(t_token *token);
+void		ft_replace_nullstart(t_envir *envir, t_token *token);
+int			ft_istype(t_token *token, char *str);
+char		*ft_malloc_string_token(char *line, int i);
+char		*ft_gst_add(char *line, char *string, int *i);
+char		*ft_get_string_token(char *line, int *i);
+t_token		*ft_token_to_cmd(t_token *token);
+t_token		*ft_next_sep(t_token *token);
 void	ft_ctrld(t_envir *envir, char *line);
 int		ft_cdhome(char *pwd[4]);
 void		ft_exec_cmd(t_envir *envir, t_token *token);
@@ -179,13 +198,13 @@ void		ft_refresh_type(t_token *start);
 int			ft_get_valid(t_token *token);
 void		ft_replace_nullstart(t_envir *envir, t_token *token);
 int			ft_istype(t_token *token, char *str);
-void		ft_move_token(t_envir *envir);
+void		ft_move_token(t_envir *envir, t_token *dup, t_token *prev, t_token *temp);
 char	*ft_search_dir(char *bin, char *cmd);
 void	ft_sonexec(t_envir *envir, char **cmd, char *path);
 void	ft_exec_nonbuiltin(t_envir *envir, char **cmd);
 void	ft_exec_builtin(t_envir *envir, char **cmd);
 void		ft_exec_cmd(t_envir *envir, t_token *token);
-void		ft_exec_loop(t_envir *envir, t_token *token);
+void		ft_exec_set(t_envir *envir, t_token *token);
 char	*ft_malloc_new_line(char *line)	;		
 char	*ft_str_remove(char *str);
 char	*ft_add_spacesep(char *line);

@@ -6,18 +6,11 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/12 07:33:19 by user42            #+#    #+#             */
-/*   Updated: 2021/02/12 07:34:00 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/25 20:53:15 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
-
-void				ft_error(char *str)
-{
-	write(2, str, ft_strlen(str));
-	ft_putchar('\n');
-	exit(1);
-}
 
 size_t				ft_strlcpy(char *dst, char const *src, size_t size)
 {

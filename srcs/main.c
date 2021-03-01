@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/21 18:39:21 by user42            #+#    #+#             */
-/*   Updated: 2021/02/24 01:57:45 by user42           ###   ########.fr       */
+/*   Updated: 2021/02/27 19:41:44 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,12 +61,19 @@ void	ft_prompt(t_envir *envir)
 
 void	ft_launch(t_envir *envir, char *line)
 {
+	t_token *dup;
+	t_token *prev;
+	t_token *temp;
+
+	dup = NULL;
+	prev = NULL;
+	temp = NULL;
 	if (ft_verif_syntax(envir) == 0)
 	{
-		ft_move_token(envir);
+		ft_move_token(envir, dup, prev, temp);
 		in_loop = 1;
 		if (envir->start)
-			ft_exec_loop(envir, envir->start);
+			ft_exec_set(envir, envir->start);
 		in_loop = 0;
 		free(line);
 		ft_free_token(envir->start);

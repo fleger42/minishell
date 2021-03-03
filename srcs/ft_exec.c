@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/28 19:39:52 by user42            #+#    #+#             */
-/*   Updated: 2021/02/25 21:00:12 by user42           ###   ########.fr       */
+/*   Updated: 2021/03/01 04:58:00 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,9 @@ void		ft_exec_cmd(t_envir *envir, t_token *token)
 
 void		ft_exec_loop(t_envir *envir, t_token *token, int pid, int temp)
 {
-	while (token != NULL && ctrl_c_called == 0)
+	while (token != NULL && g_ctrl_c_called == 0)
 	{
-		in_child = 0;
+		g_in_child = 0;
 		envir->pipe_dad = 0;
 		ft_dollar_until_next(envir, token);
 		if (token->string && token->string[0])

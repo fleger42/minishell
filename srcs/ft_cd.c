@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/11 07:20:51 by user42            #+#    #+#             */
-/*   Updated: 2021/02/11 07:40:52 by user42           ###   ########.fr       */
+/*   Updated: 2021/03/01 04:41:57 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ int		ft_cdtest(t_envir *envir, char **av, char *pwd[4])
 		if (ft_cdnoarg(envir, pwd))
 			return (1);
 	}
-	else if (strcmp(av[1], "-") == 0)
+	else if (ft_strcmp(av[1], "-") == 0)
 	{
 		if (ft_cdhome(pwd))
 			return (1);

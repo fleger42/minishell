@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/21 18:39:21 by user42            #+#    #+#             */
-/*   Updated: 2021/02/27 19:41:44 by user42           ###   ########.fr       */
+/*   Updated: 2021/03/01 04:58:04 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ int		ft_pipe(t_envir *envir)
 		dup2(fd[0], 0);
 		envir->child = 1;
 		envir->pipeinfd = fd[0];
-		in_child = 1;
+		g_in_child = 1;
 		return (2);
 	}
 	else
@@ -42,10 +42,10 @@ int		ft_pipe(t_envir *envir)
 
 void	ft_prompt(t_envir *envir)
 {
-	if (ctrl_c_called == 1)
+	if (g_ctrl_c_called == 1)
 	{
 		envir->exit_code = 130;
-		ctrl_c_called = 0;
+		g_ctrl_c_called = 0;
 	}
 	else
 	{
@@ -71,10 +71,10 @@ void	ft_launch(t_envir *envir, char *line)
 	if (ft_verif_syntax(envir) == 0)
 	{
 		ft_move_token(envir, dup, prev, temp);
-		in_loop = 1;
+		g_in_loop = 1;
 		if (envir->start)
 			ft_exec_set(envir, envir->start);
-		in_loop = 0;
+		g_in_loop = 0;
 		free(line);
 		ft_free_token(envir->start);
 	}
@@ -96,7 +96,7 @@ void	ft_minishell(t_envir *envir)
 	{
 		ft_prompt(envir);
 		get_next_line(0, &line);
-		ctrl_c_called = 0;
+		g_ctrl_c_called = 0;
 		if (line == NULL)
 			ft_ctrld(envir, line);
 		if ((ret = ft_check_quote(line)))
@@ -119,7 +119,7 @@ int		main(int ac, char **av, char **envp)
 	t_envir *envir;
 
 	envir = ft_malloc_t_envir(envp, av);
-	in_loop = 0;
+	g_in_loop = 0;
 	ft_set_env(envir->envp, envir->prog_name);
 	ft_minishell(envir);
 	(void)ac;

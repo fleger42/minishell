@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/12 05:15:07 by user42            #+#    #+#             */
-/*   Updated: 2021/02/12 05:17:06 by user42           ###   ########.fr       */
+/*   Updated: 2021/03/01 04:58:02 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@ void	ft_signal_handler(int signal)
 {
 	if (signal == SIGINT)
 	{
-		if (in_child == 0)
+		if (g_in_child == 0)
 		{
-			if (in_loop == 1)
+			if (g_in_loop == 1)
 			{
 				write(STDERR_FILENO, "\b\b  ", 4);
 				write(STDERR_FILENO, "\n", 1);
@@ -31,7 +31,7 @@ void	ft_signal_handler(int signal)
 				write(STDERR_FILENO, "\n", 1);
 				write(STDERR_FILENO, BLUE"=> Minishell:"NORMAL, 25);
 			}
-			ctrl_c_called = 1;
+			g_ctrl_c_called = 1;
 		}
 	}
 }

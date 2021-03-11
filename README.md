@@ -7,17 +7,19 @@
 
 The goal of this project is to make our own version of [bash][2]. It must be able to handle basic input such as :
 
+- All bash command
 - Use redirection ***"<" "<<" ">"***
-No memory leaks
+- Pipe "|"
+- colons ";"
+- " and ' (You should not be able to handle open quote)
+- The following builtin **_MUST_** be implemented by yourself :
 
-Minishell has the following builtin implemented :
-
-| First Header  | Second Header |
-| ------------- | ------------- |
-| Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  |
+|  echo          |       cd        |      pwd       |    export      | unset          | env            | exit           |
+| -------------- | --------------- | -------------- | -------------- | -------------- | -------------- | -------------- |
+| With -n option | With no option  | With no option | With no option | With no option | With no option | With no option |
 
 ## Final grade:
+100/100
 
 ### Nota bene:
 I didnt do termcaps and history gestion with up and down arrow.

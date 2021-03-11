@@ -3,9 +3,19 @@
 [Subject][1]
 ## Goal:
 
-The goal of this project is to make our own version of [bash][2]. To pass the test, your minisell has to have the following requirement :
+- [x] No memory leaks
 
+The goal of this project is to make our own version of [bash][2]. It must be able to handle basic input such as :
 
+- Use redirection ***"<" "<<" ">"***
+No memory leaks
+
+Minishell has the following builtin implemented :
+
+| First Header  | Second Header |
+| ------------- | ------------- |
+| Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  |
 
 ## Final grade:
 

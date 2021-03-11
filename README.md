@@ -5,9 +5,9 @@
 
 - [x] No memory leaks
 
-The goal of this project is to make our own version of [bash][2]. It must be able to handle basic input such as :
+The goal of this project is to make our own version of [bash][2]. It must be able to handle basic features such as :
 
-- All bash command
+- Execute all bash command
 - Use redirection ***"<" "<<" ">"***
 - Pipe "|"
 - colons ";"

@@ -5,6 +5,7 @@
 
 - [x] No memory leaks
 - [x] Norm
+
 The goal of this project is to make our own version of [bash][2]. It must be able to handle basic features such as :
 
 - Execute all bash command

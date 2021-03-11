@@ -1,7 +1,7 @@
 # **minishell:** 
 ## ***A 42 project... :***
 [Subject][1]
-## Requirment:
+## Requirement:
 You must be on a Linux distribution.
 ## Goal:
 

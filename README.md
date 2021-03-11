@@ -3,6 +3,10 @@
 [Subject][1]
 ## Requirement:
 You must be on a Linux distribution.
+## Usage:
+Launch make in the repository and than ./minishell. Try some commands :) 
+`Exemple:`
+![test_image](testminishell.png)
 ## Goal:
 
 - [x] No memory leaks

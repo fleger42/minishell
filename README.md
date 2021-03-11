@@ -1,6 +1,8 @@
 # **minishell:** 
 ## ***A 42 project... :***
 [Subject][1]
+## Requirment:
+You must be on a Linux distribution.
 ## Goal:
 
 - [x] No memory leaks
